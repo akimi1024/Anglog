@@ -1,0 +1,42 @@
+# ───── Dependencies ─────
+node_modules/
+.pnpm-store/
+
+# ───── Logs ─────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ───── Env / Secrets ─────
+.env
+.env.*
+!.env.example          # サンプルだけは追跡する
+*.pem
+
+# ───── Next.js (apps/web) ─────
+.next/
+out/
+build/
+.vercel/
+next-env.d.ts          # Next が自動生成（コミット不要）
+
+# ───── AWS CDK (packages/infra) ─────
+cdk.out/
+.cdk.staging/
+# cdk.context.json     # ← 後述。基本コミット推奨なので無視しない
+
+# ───── TypeScript ─────
+*.tsbuildinfo
+dist/
+
+# ───── Test / Coverage ─────
+coverage/
+.nyc_output/
+
+# ───── Editor / OS ─────
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json   # 推奨拡張だけは共有してもよい
