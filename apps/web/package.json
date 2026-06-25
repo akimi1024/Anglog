@@ -1,0 +1,8 @@
+{
+  "name": "@anglog/web",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "@anglog/shared": "workspace:*"
+  }
+}
