@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", // 出力する JS の文法世代
+    "module": "CommonJS", // モジュール方式。CJSが無難
+    "moduleResolution": "node10",
+    "declaration": true,　// *.d.ts(型定義ファイル)を出力 他のパッケージが型を読める
+    "outDir": "dist", // ビルド結果の出力先
+    "rootDir": "src", // ソースの起点
+    "strict": true, // 厳格モード
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src"]
+}

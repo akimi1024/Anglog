@@ -21,27 +21,29 @@
 
 ---
 
-## Phase 0. 基盤（← 今ここ）
+## Phase 0. 基盤
 **Definition of Done**
-- [ ] `git init` 済み・`.gitignore`（node_modules, cdk.out, .env 等）整備
-- [ ] pnpm workspace モノレポ構成
-  - [ ] `apps/web` … Next.js (App Router) + TypeScript
-  - [ ] `packages/infra` … AWS CDK (TypeScript)
-  - [ ] `packages/shared` … 共有型（エンティティ/APIの型）
-- [ ] ルート `tsconfig` を strict（`strict: true`, `noUncheckedIndexedAccess` 等）
-- [ ] ESLint + Prettier 設定・`pnpm lint` / `pnpm format` が通る
-- [ ] `pnpm build` が全パッケージで通る（空でもビルドOK）
-- [ ] `CLAUDE.md` 作成（概要・コマンド・構成・規約）
-- [ ] 初回コミット → レビュー依頼
+- [x] `git init` 済み・`.gitignore`（node_modules, cdk.out, .env 等）整備
+- [x] pnpm workspace モノレポ構成（ルート package.json / pnpm-workspace.yaml / Corepack で pnpm 固定）
+  - [x] `apps/web` … Next.js 16 (App Router) + TypeScript + Tailwind（`pnpm dev` 起動確認済み）
+  - [~] `packages/infra` … 最小プレースホルダのみ。CDK 実構築は Phase 2
+  - [~] `packages/shared` … 最小プレースホルダのみ。型本体と参照配線は Phase 1
+- [x] `apps/web` tsconfig strict（root 共通 `tsconfig.base.json` は Phase 1 で導入）
+- [~] ESLint は web に同梱。root Prettier / root tsconfig.base は必要時に追加
+- [x] `pnpm dev` で web 起動
+- [x] `CLAUDE.md` 作成
+- [ ] Phase 0 コミット → Phase 1 へ
+（注: noUncheckedIndexedAccess 等の追加厳格化は任意。shared/infra の作り込みは各フェーズで実施）
 
 ## Phase 1. データ設計（最重要・コード前にレビュー）
-- [ ] エンティティ定義: user / catch（釣果）/ parking（駐車場）/ weather（天気スナップショット）
-- [ ] **DynamoDB 単一テーブル設計**（PK/SK 命名）
-- [ ] **アクセスパターン一覧**を文書化（取得/一覧/絞り込み/地図範囲/期間 …）
-- [ ] GSI 設計（必要な検索軸ごと）
-- [ ] geohash による地理検索方針
-- [ ] API 契約（エンドポイント＋ `packages/shared` の型）
-- [ ] 設計レビュー通過 → 実装着手
+- [x] アクセスパターン一覧（DESIGN.md / 釣果C1-C9・駐車場P1-P3・U1）
+- [x] DynamoDB 単一テーブル設計（PK/SK・GSI1/2/3）— DESIGN.md
+- [x] GSI 設計・任意ANDのクエリ戦略
+- [x] geohash による地理検索方針
+- [x] 設計レビュー通過
+- [ ] `packages/shared` に TS 型を定義（Catch/ParkingSpot/User、キー型、API入出力型）
+- [ ] `packages/shared` の型公開設定（exports/types）＋ web/infra から import 確認
+- [ ] API 契約（エンドポイント定義）
 
 ## Phase 2. インフラ土台（CDK）
 - [ ] DynamoDB テーブル + GSI
