@@ -1,11 +1,7 @@
+import type { GeoPoint, BoundingBox } from "./geo"
+
 // 釣り方
 export type FishingMethod = "lure" | "bait" | "fly" | "other";
-
-// 緯度経度
-export interface GeoPoint {
-  lat: number;
-  lon: number;
-}
 
 // 天気スナップショット
 export interface Weather {
@@ -46,14 +42,6 @@ export type CreateCatchInput = Omit<
 
 // 更新時の入力
 export type UpdateCatchInput = Partial<CreateCatchInput>;
-
-// 検索クエリ
-export interface BoundingBox {
-  minLat: number;
-  minLon: number;
-  maxLat: number;
-  maxLon: number;
-}
 
 export interface CatchSearchQuery {
   species?: string;

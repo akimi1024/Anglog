@@ -6,7 +6,7 @@ DynamoDB 単一テーブル設計。MVP は GSI + FilterExpression + geohash で
 ## エンティティ
 - **User**: プロフィール
 - **Catch（釣果）**: 本体
-- **ParkingSpot（駐車場）**: 全ユーザー共同編集
+- **Parking（駐車場）**: 全ユーザー共同編集
 - **天気**: Catch に 1:1 で埋め込み（別アイテムにしない）
 
 ## Catch フィールド
@@ -29,6 +29,26 @@ DynamoDB 単一テーブル設計。MVP は GSI + FilterExpression + geohash で
 | weather | 天気スナップショット（map: 天候/気温/風/気圧等） | |
 | isPublic | 公開フラグ（当面は常に true） | スコープ（全体） |
 | createdAt / updatedAt | 監査 | |
+
+## Parking フィールド
+| 項目 | 型 | 必須 | メモ |
+|---|---|---|---|
+| parkingId | string | ✓ | |
+| location | GeoPoint | ✓ | 緯度経度 |
+| geohash | string | ✓ | location から算出（サーバ） |
+| fee | string | 任意 | 「無料」「¥500/日」等のテキスト |
+| memo | string | 任意 | |
+| createdAt / updatedAt | string | ✓ | |
+| lastEditedBy | string | ✓ | 最終編集者の userId（全ユーザー共同編集） |
+
+## User フィールド
+| 項目 | 型 | 必須 | メモ |
+|---|---|---|---|
+| userId | string | ✓ | Cognito の sub と対応 |
+| displayName | string | ✓ | 表示名 |
+| createdAt | string | ✓ | |
+
+（認証情報＝メール/パスワードは Cognito 側が保持。DynamoDB の User はプロフィールのみ。アバター画像等は将来追加）
 
 ## アクセスパターン（確定）
 ### 釣果
@@ -54,7 +74,7 @@ DynamoDB 単一テーブル設計。MVP は GSI + FilterExpression + geohash で
 | アイテム | PK | SK | 主な属性 |
 |---|---|---|---|
 | Catch | `CATCH#<catchId>` | `META` | 上記フィールド一式 |
-| ParkingSpot | `PARK#<parkingId>` | `META` | lat/lon, geohash, fee, memo, createdAt, updatedAt, lastEditedBy |
+| Parking | `PARK#<parkingId>` | `META` | lat/lon, geohash, fee, memo, createdAt, updatedAt, lastEditedBy |
 | User | `USER#<userId>` | `PROFILE` | 表示名 等 |
 
 ### GSI
