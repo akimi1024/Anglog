@@ -50,7 +50,7 @@
 - [x] CDKプロジェクト雛形（cdk.json/bin/lib/tsconfig）— `cdk synth` 空スタック通過（AWS未接続）
 - [x] DynamoDB テーブル + GSI1/2/3（PAY_PER_REQUEST・synth確認・未deploy）
 - [ ] Cognito User Pool / App Client
-- [ ] S3 バケット（画像・署名付きURL前提・CORS）
+- [x] S3 バケット（非公開・SSE-S3・CORS GET/PUT・autoDeleteObjects）— synth確認
 - [ ] API Gateway (HTTP API) + hello Lambda
 - [ ] AWS Budgets（¥2000 アラート）
 - [ ] `cdk deploy` 成功 / IAM 最小権限 / RemovalPolicy 確認
