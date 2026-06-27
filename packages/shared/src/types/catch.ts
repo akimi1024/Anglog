@@ -50,4 +50,6 @@ export interface CatchSearchQuery {
   to?: string;
   areaName?: string;
   bbox?: BoundingBox;
+  limit?: number;
+  cursor?: string;
 }
