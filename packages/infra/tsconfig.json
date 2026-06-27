@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2023", // 出力する JS の文法世代
+    "module": "node16", // モジュール方式。CJSが無難
+    "moduleResolution": "node16",
+    "lib": ["ES2023"],
+    "strict": true, // 厳格モード
+    "declaration": false, // *.d.ts(型定義ファイル)を出力しない
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "types": ["node"]
+  },
+  "exclude": ["node_modules", "cdk.out"]
+}

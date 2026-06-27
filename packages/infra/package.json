@@ -3,6 +3,20 @@
   "private": true,
   "version": "1.0.0",
   "dependencies": {
-    "@anglog/shared": "workspace:*"
+    "@anglog/shared": "workspace:*",
+    "aws-cdk-lib": "^2.260.0",
+    "constructs": "^10.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "aws-cdk": "^2.1128.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  },
+  "scripts": {
+    "cdk": "cdk",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy"
   }
 }
