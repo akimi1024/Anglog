@@ -41,9 +41,10 @@
 - [x] GSI 設計・任意ANDのクエリ戦略
 - [x] geohash による地理検索方針
 - [x] 設計レビュー通過
-- [ ] `packages/shared` に TS 型を定義（Catch/ParkingSpot/User、キー型、API入出力型）
-- [ ] `packages/shared` の型公開設定（exports/types）＋ web/infra から import 確認
-- [ ] API 契約（エンドポイント定義）
+- [x] `packages/shared` に TS 型を定義（Catch/Parking/User/geo＋Create/Update/Search型）
+- [x] `packages/shared` の型公開設定（exports/types・node16・dist出力）— build緑
+- [ ] web/infra から実 import 確認（Phase 4 で実使用時に確認）
+- [x] API 契約（エンドポイント定義・Page<T>・DESIGN.md に記載）
 
 ## Phase 2. インフラ土台（CDK）
 - [ ] DynamoDB テーブル + GSI

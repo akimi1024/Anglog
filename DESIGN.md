@@ -97,3 +97,42 @@ DynamoDB 単一テーブル設計。MVP は GSI + FilterExpression + geohash で
 - **geohash bbox**：表示範囲を覆う prefix 群を計算して複数 Query（ライブラリ例: ngeohash）。prefix 長でセル粒度を調整。
 - **GSI2 のホットパーティション**：`PUBLIC` 単一キーは規模拡大で偏る → `PUBLIC#<0..n>` シャーディングで分散（MVPは単一でOK）。
 - **複合検索が重くなったら**：DynamoDB Streams → 検索エンジンへ。
+
+## API 契約
+方針: REST。スコープは **パス分離**（自分＝`/me/...`）。一覧はカーソル方式の **ラッパー型 `Page<T>`** で返す。
+型はすべて `@anglog/shared` を参照。
+
+### 共通
+- 一覧レスポンス: `Page<T> = { items: T[]; nextCursor?: string }`（`nextCursor` は続きがある時のみ。DynamoDB の LastEvaluatedKey をエンコードした不透明トークン）
+- 一覧リクエスト（検索系）: `CatchSearchQuery` に `limit?: number` / `cursor?: string` を追加。
+
+### 釣果（Catch）
+| メソッド | パス | 対応 | リクエスト | レスポンス |
+|---|---|---|---|---|
+| POST | `/catches` | C1 作成 | `CreateCatchInput` | `Catch` |
+| GET | `/catches` | C5/C6 全公開 一覧・検索 | query=`CatchSearchQuery` | `Page<Catch>` |
+| GET | `/me/catches` | C2/C3 自分 一覧・検索 | query=`CatchSearchQuery` | `Page<Catch>` |
+| GET | `/catches/{catchId}` | C4/C7 詳細 | — | `Catch` |
+| PUT | `/catches/{catchId}` | C8 編集（本人） | `UpdateCatchInput` | `Catch` |
+| DELETE | `/catches/{catchId}` | C9 削除（本人） | — | `204` |
+
+### 駐車場（Parking）
+| メソッド | パス | 対応 | リクエスト | レスポンス |
+|---|---|---|---|---|
+| POST | `/parking` | P1 作成 | `CreateParkingInput` | `Parking` |
+| GET | `/parking` | P2 地図範囲で取得 | query=`bbox`（＋将来 `limit`/`cursor`） | `Page<Parking>` |
+| GET | `/parking/{parkingId}` | 編集前取得 | — | `Parking` |
+| PUT | `/parking/{parkingId}` | P3 編集（全ユーザー可） | `UpdateParkingInput` | `Parking` |
+
+### ユーザー（User）
+| メソッド | パス | 対応 | リクエスト | レスポンス |
+|---|---|---|---|---|
+| GET | `/me` | 自分のプロフィール | — | `User` |
+| PUT | `/me` | プロフィール更新 | `UpdateUserInput` | `User` |
+| GET | `/users/{userId}` | U1 他人のプロフィール | — | `User` |
+| POST | `/users` | 初回ログイン時の作成 | `CreateUserInput` | `User` |
+
+### 補足
+- 認証必須: `/me/...` と各 POST/PUT/DELETE（Cognito の JWT を検証）。`GET /catches`・`/parking`・`/users/{id}` は公開（未ログインでも可）。
+- サーバが埋める項目（geohash/weather/lastEditedBy/createdAt 等）はリクエスト型に含めない（`Create*Input` の `Omit` と一致）。
+- 画像アップロード（S3 署名付きURL取得）は Phase 4 で追加。
