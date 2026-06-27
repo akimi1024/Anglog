@@ -47,6 +47,7 @@
 - [x] API 契約（エンドポイント定義・Page<T>・DESIGN.md に記載）
 
 ## Phase 2. インフラ土台（CDK）
+- [x] CDKプロジェクト雛形（cdk.json/bin/lib/tsconfig）— `cdk synth` 空スタック通過（AWS未接続）
 - [ ] DynamoDB テーブル + GSI
 - [ ] Cognito User Pool / App Client
 - [ ] S3 バケット（画像・署名付きURL前提・CORS）
