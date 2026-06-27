@@ -1,5 +1,6 @@
 import { Stack, StackProps, RemovalPolicy } from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 
 export class AnglogStack extends Stack {
@@ -30,6 +31,20 @@ export class AnglogStack extends Stack {
       indexName: "GSI3",
       partitionKey: { name: "GSI3PK", type: dynamodb.AttributeType.STRING },
       sortKey: { name: "GSI3SK", type: dynamodb.AttributeType.STRING },
+    });
+
+    const imageBucket = new s3.Bucket(this, "ImageBucket", {
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT],
+          allowedOrigins: ["*"],
+          allowedHeaders: ["*"],
+        },
+      ],
     });
   }
 }
