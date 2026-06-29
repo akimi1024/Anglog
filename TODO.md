@@ -49,7 +49,7 @@
 ## Phase 2. インフラ土台（CDK）
 - [x] CDKプロジェクト雛形（cdk.json/bin/lib/tsconfig）— `cdk synth` 空スタック通過（AWS未接続）
 - [x] DynamoDB テーブル + GSI1/2/3（PAY_PER_REQUEST・synth確認・未deploy）
-- [ ] Cognito User Pool / App Client
+- [x] Cognito User Pool / App Client（email sign-in・SRP・secret無し）— synth確認。OAuth/Hosted UI設定はPhase 3で調整（implicit切る等）
 - [x] S3 バケット（非公開・SSE-S3・CORS GET/PUT・autoDeleteObjects）— synth確認
 - [ ] API Gateway (HTTP API) + hello Lambda
 - [ ] AWS Budgets（¥2000 アラート）

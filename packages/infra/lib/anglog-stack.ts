@@ -1,6 +1,7 @@
 import { Stack, StackProps, RemovalPolicy } from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as cognito from "aws-cdk-lib/aws-cognito";
 import { Construct } from "constructs";
 
 export class AnglogStack extends Stack {
@@ -46,5 +47,25 @@ export class AnglogStack extends Stack {
         },
       ],
     });
+
+    const userPool = new cognito.UserPool(this, "UserPool", {
+      selfSignUpEnabled: true,
+      signInAliases: { email: true },
+      autoVerify: { email: true },
+      passwordPolicy: {
+        minLength: 8,
+        requireLowercase: true,
+        requireDigits: true,
+        requireUppercase: false,
+        requireSymbols: false,
+      },
+      accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      removalPolicy: RemovalPolicy.DESTROY
+    });
+
+    const userPoolClient = userPool.addClient("WebClient", {
+      authFlows: { userSrp: true },
+      generateSecret: false,
+    })
   }
 }
