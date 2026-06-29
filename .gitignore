@@ -40,3 +40,9 @@ coverage/
 .idea/
 .vscode/*
 !.vscode/extensions.json   # 推奨拡張だけは共有してもよい
+
+node_modules
+dist
+.next
+cdk.out
+pnpm-lock.yaml

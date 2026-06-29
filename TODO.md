@@ -51,7 +51,7 @@
 - [x] DynamoDB テーブル + GSI1/2/3（PAY_PER_REQUEST・synth確認・未deploy）
 - [x] Cognito User Pool / App Client（email sign-in・SRP・secret無し）— synth確認。OAuth/Hosted UI設定はPhase 3で調整（implicit切る等）
 - [x] S3 バケット（非公開・SSE-S3・CORS GET/PUT・autoDeleteObjects）— synth確認
-- [ ] API Gateway (HTTP API) + hello Lambda
+- [x] API Gateway (HTTP API) + hello Lambda（NodejsFunction/esbuild・GET /hello・ApiUrl出力）— synth確認
 - [ ] AWS Budgets（¥2000 アラート）
 - [ ] `cdk deploy` 成功 / IAM 最小権限 / RemovalPolicy 確認
 
