@@ -52,8 +52,10 @@
 - [x] Cognito User Pool / App Client（email sign-in・SRP・secret無し）— synth確認。OAuth/Hosted UI設定はPhase 3で調整（implicit切る等）
 - [x] S3 バケット（非公開・SSE-S3・CORS GET/PUT・autoDeleteObjects）— synth確認
 - [x] API Gateway (HTTP API) + hello Lambda（NodejsFunction/esbuild・GET /hello・ApiUrl出力）— synth確認
-- [ ] AWS Budgets（¥2000 アラート）
-- [ ] `cdk deploy` 成功 / IAM 最小権限 / RemovalPolicy 確認
+- [x] AWS Budgets（$13/月・80%/100%通知）— synth確認
+- [x] RemovalPolicy: DESTROY（開発中・本番はRETAINへ）
+- [ ] bootstrap + `cdk deploy`（AWSに実体化・未実施）
+- [ ] IAM 最小権限（Lambda→Dynamo/S3 の権限付与は Phase 4 で）
 
 ## Phase 3. 認証（Cognito）
 - [ ] サインアップ / ログイン / ログアウト（web）

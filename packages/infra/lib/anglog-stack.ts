@@ -12,6 +12,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as apigw2 from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as budgets from "aws-cdk-lib/aws-budgets";
 import { Construct } from "constructs";
 
 export class AnglogStack extends Stack {
@@ -92,6 +93,42 @@ export class AnglogStack extends Stack {
       integration: new HttpLambdaIntegration("HelloIntegration", hellofn),
     });
 
-    new CfnOutput(this, "Apiurl", { value: httpApi.apiEndpoint})
+    new CfnOutput(this, "Apiurl", { value: httpApi.apiEndpoint });
+
+    new budgets.CfnBudget(this, "MonthlyBudgets", {
+      budget: {
+        budgetName: "anglog-monthly",
+        budgetType: "COST",
+        timeUnit: "MONTHLY",
+        budgetLimit: {
+          amount: 13,
+          unit: "USD",
+        },
+      },
+      notificationsWithSubscribers: [
+        {
+          notification: {
+            notificationType: "ACTUAL",
+            comparisonOperator: "GREATER_THAN",
+            threshold: 80,
+            thresholdType: "PERCENTAGE",
+          },
+          subscribers: [
+            { subscriptionType: "EMAIL", address: "a.miyazawa1024@gmail.com" },
+          ],
+        },
+        {
+          notification: {
+            notificationType: "ACTUAL",
+            comparisonOperator: "GREATER_THAN",
+            threshold: 100,
+            thresholdType: "PERCENTAGE",
+          },
+          subscribers: [
+            { subscriptionType: "EMAIL", address: "a.miyazawa1024@gmail.com" },
+          ],
+        },
+      ],
+    });
   }
 }
