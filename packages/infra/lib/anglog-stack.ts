@@ -1,7 +1,17 @@
-import { Stack, StackProps, RemovalPolicy } from "aws-cdk-lib";
+import {
+  Stack,
+  StackProps,
+  RemovalPolicy,
+  CfnOutput,
+  Duration,
+} from "aws-cdk-lib";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import * as apigw2 from "aws-cdk-lib/aws-apigatewayv2";
+import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import { Construct } from "constructs";
 
 export class AnglogStack extends Stack {
@@ -60,12 +70,28 @@ export class AnglogStack extends Stack {
         requireSymbols: false,
       },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
-      removalPolicy: RemovalPolicy.DESTROY
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     const userPoolClient = userPool.addClient("WebClient", {
       authFlows: { userSrp: true },
       generateSecret: false,
-    })
+    });
+
+    const hellofn = new NodejsFunction(this, "HelloFunction", {
+      entry: "lambda/hello.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+    });
+
+    const httpApi = new apigw2.HttpApi(this, "HttpApi");
+
+    httpApi.addRoutes({
+      path: "/hello",
+      methods: [apigw2.HttpMethod.GET],
+      integration: new HttpLambdaIntegration("HelloIntegration", hellofn),
+    });
+
+    new CfnOutput(this, "Apiurl", { value: httpApi.apiEndpoint})
   }
 }
