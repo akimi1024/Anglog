@@ -93,7 +93,17 @@ export class AnglogStack extends Stack {
       integration: new HttpLambdaIntegration("HelloIntegration", hellofn),
     });
 
-    new CfnOutput(this, "Apiurl", { value: httpApi.apiEndpoint });
+    new CfnOutput(this, "Apiurl", {
+      value: httpApi.apiEndpoint,
+    });
+
+    new CfnOutput(this, "UserPoolId", {
+      value: userPool.userPoolId,
+    });
+
+    new CfnOutput(this, "UserPoolClient", {
+      value: userPoolClient.userPoolClientId,
+    });
 
     new budgets.CfnBudget(this, "MonthlyBudgets", {
       budget: {

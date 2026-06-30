@@ -54,7 +54,8 @@
 - [x] API Gateway (HTTP API) + hello Lambda（NodejsFunction/esbuild・GET /hello・ApiUrl出力）— synth確認
 - [x] AWS Budgets（$13/月・80%/100%通知）— synth確認
 - [x] RemovalPolicy: DESTROY（開発中・本番はRETAINへ）
-- [ ] bootstrap + `cdk deploy`（AWSに実体化・未実施）
+- [x] bootstrap + `cdk deploy`（AWS実体化済み・`GET /hello` 本番疎通確認）
+  - API URL: https://6apfkq14we.execute-api.ap-northeast-1.amazonaws.com
 - [ ] IAM 最小権限（Lambda→Dynamo/S3 の権限付与は Phase 4 で）
 
 ## Phase 3. 認証（Cognito）
