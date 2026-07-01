@@ -59,9 +59,12 @@
 - [ ] IAM 最小権限（Lambda→Dynamo/S3 の権限付与は Phase 4 で）
 
 ## Phase 3. 認証（Cognito）
-- [ ] サインアップ / ログイン / ログアウト（web）
-- [ ] JWT を API に付与 → Lambda 側で検証（authorizer）
-- [ ] 認証必須ルートの保護
+- [x] Amplify導入＋設定（ConfigureAmplify / .env.local）
+- [x] サインアップ（確認コード）/ ログイン / ログアウト（web）
+- [x] ログイン状態表示（Header・useEffect＋Hub）
+- [ ] JWT を API に付与 → 検証（authorizer）※Phase 4 とセットで実施
+- [ ] 認証必須ルートの保護 ※Phase 4 とセットで実施
+- [ ] （任意）Cognito ClientのOAuth/implicit既定の整理
 
 ## Phase 4. 釣果CRUD（中核）
 - [ ] Lambda ハンドラ + DynamoDB アクセス層
