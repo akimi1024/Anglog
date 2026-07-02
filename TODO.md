@@ -67,9 +67,12 @@
 - [ ] （任意）Cognito ClientのOAuth/implicit既定の整理
 
 ## Phase 4. 釣果CRUD（中核）
-- [ ] Lambda ハンドラ + DynamoDB アクセス層
-- [ ] 入力検証（zod 等）
-- [ ] web: 一覧 / 詳細 / 作成 / 編集（モバイルファースト）
+- [x] JWTオーソライザ＋認証付き POST /catches（CDK）
+- [x] createCatch ハンドラ（zod検証・キー/GSI/geohash組み立て・PutItem）— curl で201＆DynamoDB確認
+- [ ] GET /catches（公開フィード）/ GET /me/catches（自分）
+- [ ] GET /catches/{id}（詳細）
+- [ ] PUT/DELETE /catches/{id}（編集・削除）
+- [ ] web: 一覧 / 詳細 / 作成 / 編集（モバイルファースト・JWT添付fetch）
 - [ ] 位置・日時は任意/手入力（**過去日OK**・後から補完可）
 - [ ] 全体公開で表示
 
