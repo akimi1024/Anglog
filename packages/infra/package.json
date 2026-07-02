@@ -4,11 +4,16 @@
   "version": "1.0.0",
   "dependencies": {
     "@anglog/shared": "workspace:*",
+    "@aws-sdk/client-dynamodb": "^3.1077.0",
+    "@aws-sdk/lib-dynamodb": "^3.1077.0",
     "aws-cdk-lib": "^2.260.0",
-    "constructs": "^10.6.0"
+    "constructs": "^10.6.0",
+    "ngeohash": "^0.6.3",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.162",
+    "@types/ngeohash": "^0.6.8",
     "@types/node": "^20.19.43",
     "aws-cdk": "^2.1128.1",
     "esbuild": "^0.28.1",
