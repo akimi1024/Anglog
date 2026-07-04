@@ -10,11 +10,11 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import * as apigw2 from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as budgets from "aws-cdk-lib/aws-budgets";
 import { Construct } from "constructs";
 import { HttpUserPoolAuthorizer } from "aws-cdk-lib/aws-apigatewayv2-authorizers";
+import { CorsHttpMethod, HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 
 export class AnglogStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -86,12 +86,17 @@ export class AnglogStack extends Stack {
       timeout: Duration.seconds(10),
     });
 
-    const httpApi = new apigw2.HttpApi(this, "HttpApi");
-
-    httpApi.addRoutes({
-      path: "/hello",
-      methods: [apigw2.HttpMethod.GET],
-      integration: new HttpLambdaIntegration("HelloIntegration", hellofn),
+    const httpApi = new HttpApi(this, "AnglogHttpApi", {
+      corsPreflight: {
+        allowOrigins: ["http://localhost:3000"],
+        allowMethods: [
+          CorsHttpMethod.GET,
+          CorsHttpMethod.POST,
+          CorsHttpMethod.PUT,
+          CorsHttpMethod.DELETE,
+        ],
+        allowHeaders: ["authorization", "content-type"],
+      },
     });
 
     new CfnOutput(this, "Apiurl", {
@@ -163,7 +168,7 @@ export class AnglogStack extends Stack {
 
     httpApi.addRoutes({
       path: "/catches",
-      methods: [apigw2.HttpMethod.POST],
+      methods: [HttpMethod.POST],
       integration: new HttpLambdaIntegration(
         "CreateCatchIntegration",
         createCatchFn,

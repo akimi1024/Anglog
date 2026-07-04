@@ -72,7 +72,9 @@
 - [ ] GET /catches（公開フィード）/ GET /me/catches（自分）
 - [ ] GET /catches/{id}（詳細）
 - [ ] PUT/DELETE /catches/{id}（編集・削除）
-- [ ] web: 一覧 / 詳細 / 作成 / 編集（モバイルファースト・JWT添付fetch）
+- [~] web: 一覧 / 詳細 / 作成 / 編集（モバイルファースト・JWT添付fetch）
+  - [x] 作成フォーム（/catches/new・認証付きfetch lib/api.ts・CORS設定・UIから201確認）
+  - [ ] 一覧 / 詳細 / 編集
 - [ ] 位置・日時は任意/手入力（**過去日OK**・後から補完可）
 - [ ] 全体公開で表示
 
