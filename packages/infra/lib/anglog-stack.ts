@@ -14,7 +14,11 @@ import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations
 import * as budgets from "aws-cdk-lib/aws-budgets";
 import { Construct } from "constructs";
 import { HttpUserPoolAuthorizer } from "aws-cdk-lib/aws-apigatewayv2-authorizers";
-import { CorsHttpMethod, HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
+import {
+  CorsHttpMethod,
+  HttpApi,
+  HttpMethod,
+} from "aws-cdk-lib/aws-apigatewayv2";
 
 export class AnglogStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -164,7 +168,17 @@ export class AnglogStack extends Stack {
       },
     });
 
+    const listCatchesFn = new NodejsFunction(this, "ListCatchFunction", {
+      entry: "lambda/catches/list.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+
     table.grantWriteData(createCatchFn);
+    table.grantReadData(listCatchesFn);
 
     httpApi.addRoutes({
       path: "/catches",
@@ -174,6 +188,15 @@ export class AnglogStack extends Stack {
         createCatchFn,
       ),
       authorizer,
+    });
+
+    httpApi.addRoutes({
+      path: "/catches",
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration(
+        "ListCatchIntegration",
+        listCatchesFn,
+      ),
     });
   }
 }
