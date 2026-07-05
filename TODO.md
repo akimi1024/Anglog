@@ -69,7 +69,7 @@
 ## Phase 4. 釣果CRUD（中核）
 - [x] JWTオーソライザ＋認証付き POST /catches（CDK）
 - [x] createCatch ハンドラ（zod検証・キー/GSI/geohash組み立て・PutItem）— curl で201＆DynamoDB確認
-- [ ] GET /catches（公開フィード）/ GET /me/catches（自分）
+- [~] GET /catches（公開フィード・GSI2 Query・Page<T>・未認証で疎通確認）/ [ ] GET /me/catches（自分）
 - [ ] GET /catches/{id}（詳細）
 - [ ] PUT/DELETE /catches/{id}（編集・削除）
 - [~] web: 一覧 / 詳細 / 作成 / 編集（モバイルファースト・JWT添付fetch）
