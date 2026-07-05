@@ -74,7 +74,8 @@
 - [ ] PUT/DELETE /catches/{id}（編集・削除）
 - [~] web: 一覧 / 詳細 / 作成 / 編集（モバイルファースト・JWT添付fetch）
   - [x] 作成フォーム（/catches/new・認証付きfetch lib/api.ts・CORS設定・UIから201確認）
-  - [ ] 一覧 / 詳細 / 編集
+  - [x] 一覧ページ（/catches・listCatches・useEffectで取得・新しい順表示）
+  - [ ] 詳細 / 編集
 - [ ] 位置・日時は任意/手入力（**過去日OK**・後から補完可）
 - [ ] 全体公開で表示
 
@@ -94,6 +95,7 @@
 ## Phase 8. PWA / レスポンシブ仕上げ
 - [ ] manifest / Service Worker / ホーム追加
 - [ ] スマホUX調整・Lighthouse 確認
+- [ ] **UIデザイン刷新**（現状は素のTailwindで簡素。配色/余白/カード/タイポを整えて「いい感じ」に。デザインシステム or UIライブラリ検討）
 
 ## Phase 9. 収益化準備
 - [ ] 収益モデル決定（プレミアム機能 / 広告 / アフィリエイト 等）
