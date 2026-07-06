@@ -177,8 +177,18 @@ export class AnglogStack extends Stack {
       },
     });
 
+    const getCatchFn = new NodejsFunction(this, "GetCatchFunction", {
+      entry: "lambda/catches/get.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+
     table.grantWriteData(createCatchFn);
     table.grantReadData(listCatchesFn);
+    table.grantReadData(getCatchFn);
 
     httpApi.addRoutes({
       path: "/catches",
@@ -196,6 +206,15 @@ export class AnglogStack extends Stack {
       integration: new HttpLambdaIntegration(
         "ListCatchIntegration",
         listCatchesFn,
+      ),
+    });
+
+      httpApi.addRoutes({
+      path: "/catches/{id}",
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration(
+        "GetCatchIntegration",
+        getCatchFn,
       ),
     });
   }
