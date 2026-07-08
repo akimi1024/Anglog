@@ -3,14 +3,14 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import ngeohash from "ngeohash";
 import { z } from "zod";
-import { Catch } from "../../../shared/dist";
+import type { Catch } from "@anglog/shared";
 
 const createCatchSchema = z.object({
   caughtAt: z.string(),
   species: z.string().min(1),
   size: z.number().optional(),
   count: z.number().optional(),
-  method: z.enum(["lure", "bait", "fly", "other"]),
+  method: z.enum(["lure", "bait", "fly", "other"]).optional(),
   tackle: z.string().optional(),
   reel: z.string().optional(),
   memo: z.string().optional(),
@@ -32,15 +32,11 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
   const userId = event.requestContext.authorizer.jwt.claims.sub as string;
 
   // 2. 入力を実行時検証（壊れていたら400）
-  let input;
-  try {
-    input = createCatchSchema.parse(JSON.parse(event.body ?? "{}"));
-  } catch {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: "invalid input" }),
-    };
+  const parsed = createCatchSchema.safeParse(JSON.parse(event.body ?? "{}"));
+  if(!parsed.success){
+    return {statusCode: 400, body: JSON.stringify({message: "invalid input", issues: parsed.error.issues})};
   }
+  const input = parsed.data;
 
   // 3. サーバが決める値
   const catchId = crypto.randomUUID();
@@ -62,9 +58,6 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
     createdAt: now,
     updatedAt: now,
   };
-
-  // 5. 書き込み
-  await client.send(new PutCommand({ TableName: TABLE_NAME, Item: item }));
 
   // 公開なら公開フィード(GSI2)にも載せる
   if (input.isPublic) {
