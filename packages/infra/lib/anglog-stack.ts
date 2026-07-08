@@ -19,6 +19,7 @@ import {
   HttpApi,
   HttpMethod,
 } from "aws-cdk-lib/aws-apigatewayv2";
+import { TARGET_PARTITIONS } from "aws-cdk-lib/cx-api";
 
 export class AnglogStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -186,9 +187,19 @@ export class AnglogStack extends Stack {
       },
     });
 
+    const listMyCatchesFn = new NodejsFunction(this, "ListMyCatchesFunction", {
+      entry: "lambda/catches/list-mine.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+
     table.grantWriteData(createCatchFn);
     table.grantReadData(listCatchesFn);
     table.grantReadData(getCatchFn);
+    table.grantReadData(listMyCatchesFn);
 
     httpApi.addRoutes({
       path: "/catches",
@@ -209,13 +220,20 @@ export class AnglogStack extends Stack {
       ),
     });
 
-      httpApi.addRoutes({
+    httpApi.addRoutes({
       path: "/catches/{id}",
       methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration("GetCatchIntegration", getCatchFn),
+    });
+
+    httpApi.addRoutes({
+      path: "/catches/me",
+      methods: [HttpMethod.GET],
       integration: new HttpLambdaIntegration(
-        "GetCatchIntegration",
-        getCatchFn,
+        "ListMyCatchesIntegration",
+        listMyCatchesFn,
       ),
+      authorizer,
     });
   }
 }
