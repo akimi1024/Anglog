@@ -19,7 +19,7 @@ export interface Catch {
   species: string; //魚種
   size?: number;
   count?: number;
-  method: FishingMethod;
+  method?: FishingMethod;
   tackle?: string;
   reel?: string;
   memo?: string;

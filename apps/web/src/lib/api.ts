@@ -27,3 +27,14 @@ export async function listCatches(): Promise<Page<Catch>> {
   }
   return res.json();
 }
+
+export async function getCatch(id: string): Promise<Catch> {
+  const res = await fetch(`${API_URL}/catches/${id}`);
+  if (res.status === 404) {
+    throw new Error("記録が見つかりませんでした");
+  }
+  if (!res.ok) {
+    throw new Error(`取得に失敗しました (${res.status})`);
+  }
+  return res.json();
+}
