@@ -1,0 +1,48 @@
+"use client";
+
+import { listMyCatches } from "@/lib/api";
+import { Catch, FishingMethod } from "@anglog/shared";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+const methodLabel: Record<FishingMethod, string> = {
+  lure: "ルアー",
+  bait: "エサ",
+  fly: "フライ",
+  other: "その他",
+}
+
+export default function MyPage() {
+  const [catches, setCatches] = useState<Catch[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    listMyCatches()
+      .then((page) => setCatches(page.items))
+      .catch((err) => setError(err instanceof Error ? err.message : "取得に失敗しました"));
+  }, []);
+
+  return (
+    <main className="max-w-md mx-auto p-4">
+      <h1 className="text-xl font-bold mb-4">自分の釣果</h1>
+      {error && (<p className="text-red-600 mb-3">{error} (<Link href="/login" className="underline">ログイン</Link>)</p>)}
+      <ul className="flex-col gap-3">
+        {catches.map((c) => (
+          <li key={c.catchId} className="border p-3 rounded">
+            <Link href={`/catches/${c.catchId}`}>
+              <div className="font-bold">{c.species}</div>
+              <div className="text-sm text-gray-600">
+                {c.method ? methodLabel[c.method] : ""}
+                {c.size ? `${c.size}cm` : ""}
+                {c.count ? `${c.count}尾` : ""}
+              </div>
+              <div className="text-xs text-gray-600">
+                {new Date(c.caughtAt).toLocaleString("ja-JP")}
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
+}
