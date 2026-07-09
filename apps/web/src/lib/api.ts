@@ -38,3 +38,18 @@ export async function getCatch(id: string): Promise<Catch> {
   }
   return res.json();
 }
+
+export async function listMyCatches(): Promise<Page<Catch>> {
+  const token = await getIdToken();
+  const res = await fetch(`${API_URL}/catches/me`, {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    },);
+  if (res.status === 401) {
+    throw new Error("ログインが必要です");
+  }
+  if (!res.ok) {
+    throw new Error(`一覧取得に失敗しました (${res.status})`);
+  }
+  return res.json();
+}

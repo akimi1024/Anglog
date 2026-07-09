@@ -30,7 +30,7 @@
 | 火 07-07 | 1.5 | `GET /catches/{id}` backend（get.ts＋CDK＋deploy＋curlで1件/404確認） | [x] |
 | 水 07-08 | 1.5 | 詳細ページ `/catches/[id]`（動的ルート・getCatch呼び出し・全項目表示）＋method任意化の型是正 | [x] |
 | 木 07-09 | 1.5 | `GET /catches/me` backend（GSI1 Query・**認証必須**・トークン検証・401確認） | [x] |
-| 金 07-10 | 1.5 | マイページ web（`/catches/me` を認証付きfetch・自分の釣果一覧） | [ ] |
+| 金 07-10 | 1.5 | 自分の釣果一覧 web（`/catches/me` 静的ルート・認証付きfetch・CORS typo解消） | [x] |
 | 土 07-11 | 4.0 | `PUT /catches/{id}` backend（所有者チェック）＋ 編集ページ `/catches/[id]/edit` web | [ ] |
 | 日 07-12 | 2.0 | `DELETE /catches/{id}` backend ＋ 削除ボタン導線 | [ ] |
 | 月 07-13 | 1.5 | トップ`/`から一覧への導線整理・予備/デバッグ | [ ] |
