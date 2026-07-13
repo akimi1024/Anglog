@@ -205,11 +205,21 @@ export class AnglogStack extends Stack {
       },
     });
 
+    const deleteCatchFn = new NodejsFunction(this, "DeleteCatchFunction", {
+      entry: "lambda/catches/delete.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+
     table.grantWriteData(createCatchFn);
     table.grantReadData(listCatchesFn);
     table.grantReadData(getCatchFn);
     table.grantReadData(listMyCatchesFn);
     table.grantReadWriteData(updateCatchFn);
+    table.grantReadWriteData(deleteCatchFn);
 
     httpApi.addRoutes({
       path: "/catches",
@@ -252,6 +262,16 @@ export class AnglogStack extends Stack {
       integration: new HttpLambdaIntegration(
         "UpdateCatchesIntegration",
         updateCatchFn,
+      ),
+      authorizer,
+    });
+
+    httpApi.addRoutes({
+      path: "/catches/{id}",
+      methods: [HttpMethod.DELETE],
+      integration: new HttpLambdaIntegration(
+        "DeleteCatchesIntegration",
+        deleteCatchFn,
       ),
       authorizer,
     });
