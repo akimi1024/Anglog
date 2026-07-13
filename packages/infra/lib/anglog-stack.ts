@@ -196,10 +196,20 @@ export class AnglogStack extends Stack {
       },
     });
 
+    const updateCatchFn = new NodejsFunction(this, "UpdateCatchFunction", {
+      entry: "lambda/catches/update.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+
     table.grantWriteData(createCatchFn);
     table.grantReadData(listCatchesFn);
     table.grantReadData(getCatchFn);
     table.grantReadData(listMyCatchesFn);
+    table.grantReadWriteData(updateCatchFn);
 
     httpApi.addRoutes({
       path: "/catches",
@@ -232,6 +242,16 @@ export class AnglogStack extends Stack {
       integration: new HttpLambdaIntegration(
         "ListMyCatchesIntegration",
         listMyCatchesFn,
+      ),
+      authorizer,
+    });
+
+    httpApi.addRoutes({
+      path: "/catches/{id}",
+      methods: [HttpMethod.PUT],
+      integration: new HttpLambdaIntegration(
+        "UpdateCatchesIntegration",
+        updateCatchFn,
       ),
       authorizer,
     });
