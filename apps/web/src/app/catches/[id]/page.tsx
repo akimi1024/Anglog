@@ -39,6 +39,7 @@ export default function CatchDetailPage() {
   return (
     <main className="max-w-md mx-auto p-4">
       <Link href="/catches" className="text-blue-600 underline text-sm">一覧へ</Link>
+      <Link href={`/catches/${params.id}/edit`} className="text-blue-600 underline text-sm">編集</Link>
       <h1 className="text-2xl font-bold mt-2">{item.species}</h1>
       <dl className="mt-4 flex flex-col gap-2 text-sm">
         {item.method ?
