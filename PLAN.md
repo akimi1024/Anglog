@@ -41,8 +41,10 @@
 
 ## Week 2（07-14〜07-20）— Phase 5 地図（MapLibre）　予定 ~12h
 
-- [ ] MapLibre GL JS 導入・地図表示（OSMタイル・APIキー不要）　~2h
-- [ ] 作成/編集で地図クリック→緯度経度セット（ピン留め）　~3h
+- [x] MapLibre GL JS 導入・地図表示（OSMタイル・APIキー不要・レスポンシブ・帰属表示）　~2h
+- [x] 地図クリック→緯度経度セット（ピン留め・MapView onPick）　~2h
+- [x] 作成フォームに位置保存（location→geohash→GSI3・保存確認）
+- [~] 編集フォームに位置（初期ピン表示・MapView value prop）　🔨進行中
 - [ ] 詳細/一覧に地図表示・釣果ピン　~2h
 - [ ] 表示範囲(bbox)→geohash で検索（GSI3 Query・過剰read防止）backend＋web　~3h
 - [ ] 予備/デバッグ　~2h

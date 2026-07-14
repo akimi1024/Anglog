@@ -7,9 +7,10 @@ import type { GeoPoint } from "@anglog/shared";
 
 type Props = {
   onPick?: (point: GeoPoint) => void;
+  value?: GeoPoint | null;
 }
 
-export default function MapView({ onPick }: Props) {
+export default function MapView({ onPick, value }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
   const onPickRef = useRef(onPick);
@@ -38,6 +39,13 @@ export default function MapView({ onPick }: Props) {
       zoom: 10,
     });
 
+    if (value) {
+      map.setCenter([value.lon, value.lat]);
+      markerRef.current = new maplibregl.Marker()
+        .setLngLat([value.lon, value.lat])
+        .addTo(map);
+    }
+
     map.on("click", (e) => {
       const { lng, lat } = e.lngLat;
       if (markerRef.current) {
@@ -51,5 +59,5 @@ export default function MapView({ onPick }: Props) {
     return () => map.remove();
   }, []);
 
-  return <div ref={containerRef} style={{width: "100%", height: "70vh"}} className="rounded" />;
+  return <div ref={containerRef} style={{ width: "100%", height: "70vh" }} className="rounded" />;
 }
