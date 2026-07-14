@@ -111,6 +111,7 @@
 - [ ] フロント配信（Amplify or S3+CloudFront）
 - [ ] 独自ドメイン / HTTPS
 - [ ] コスト再確認・本番監視
+- [ ] **地図タイル提供元の見直し**（現状 tile.openstreetmap.org 直＝本番の重い利用は非推奨。MapTiler等へ切替検討。OSM帰属表示は維持）
 
 ---
 

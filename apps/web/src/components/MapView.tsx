@@ -2,9 +2,21 @@
 
 import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css"
+import type { GeoPoint } from "@anglog/shared";
 
-export default function MapView() {
+type Props = {
+  onPick?: (point: GeoPoint) => void;
+}
+
+export default function MapView({ onPick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const markerRef = useRef<maplibregl.Marker | null>(null);
+  const onPickRef = useRef(onPick);
+
+  useEffect(() => {
+    onPickRef.current = onPick;
+  }, [onPick]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -26,8 +38,18 @@ export default function MapView() {
       zoom: 10,
     });
 
+    map.on("click", (e) => {
+      const { lng, lat } = e.lngLat;
+      if (markerRef.current) {
+        markerRef.current.setLngLat([lng, lat]);
+      } else {
+        markerRef.current = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+      }
+      onPickRef.current?.({ lat, lon: lng })
+    })
+
     return () => map.remove();
   }, []);
 
-  return <div ref={containerRef} className="w-full h-96 rounded" />;
+  return <div ref={containerRef} style={{width: "100%", height: "70vh"}} className="rounded" />;
 }
