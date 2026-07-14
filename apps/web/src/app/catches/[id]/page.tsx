@@ -5,6 +5,7 @@ import { Catch, FishingMethod } from "@anglog/shared";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import MapView from "@/components/MapView";
 
 const methodLabel: Record<FishingMethod, string> = {
   lure: "ルアー",
@@ -89,6 +90,7 @@ export default function CatchDetailPage() {
           <dt className="text-gray-500 inline">メモ</dt>
           <dd className="whitespace-pre-wrap">{item.memo}</dd></div> : null
         }
+        {item.location && <MapView value={item.location} />}
       </dl>
     </main>
   )

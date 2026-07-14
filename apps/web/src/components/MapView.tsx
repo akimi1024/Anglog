@@ -47,6 +47,7 @@ export default function MapView({ onPick, value }: Props) {
     }
 
     map.on("click", (e) => {
+      if (!onPickRef.current) return;
       const { lng, lat } = e.lngLat;
       if (markerRef.current) {
         markerRef.current.setLngLat([lng, lat]);
