@@ -1,8 +1,8 @@
 "use client";
 
-import { getCatch } from "@/lib/api";
+import { deleteCatch, getCatch } from "@/lib/api";
 import { Catch, FishingMethod } from "@anglog/shared";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -14,6 +14,7 @@ const methodLabel: Record<FishingMethod, string> = {
 }
 
 export default function CatchDetailPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const [item, setItem] = useState<Catch | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,10 +37,22 @@ export default function CatchDetailPage() {
     </main>
   }
 
+  async function handleDelete() {
+    if (!item) return
+    if (!confirm("この釣果を削除しますか？")) return;
+    try {
+      await deleteCatch(item.catchId);
+      router.push("/catches");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "削除に失敗しました");
+    }
+  }
+
   return (
     <main className="max-w-md mx-auto p-4">
       <Link href="/catches" className="text-blue-600 underline text-sm">一覧へ</Link>
       <Link href={`/catches/${params.id}/edit`} className="text-blue-600 underline text-sm">編集</Link>
+      <button onClick={handleDelete} className="text-red-600 underline text-sm">削除</button>
       <h1 className="text-2xl font-bold mt-2">{item.species}</h1>
       <dl className="mt-4 flex flex-col gap-2 text-sm">
         {item.method ?

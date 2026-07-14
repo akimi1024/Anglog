@@ -77,3 +77,14 @@ export async function updateCatch(
   }
   return res.json();
 }
+
+export async function deleteCatch(id: string): Promise<void> {
+  const token = await getIdToken();
+  const res = await fetch(`${API_URL}/catches/${id}`, {
+    method: "DELETE",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) {
+    throw new Error(`削除に失敗しました (${res.status})`);
+  }
+}
