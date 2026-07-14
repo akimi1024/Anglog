@@ -1,7 +1,8 @@
 "use client";
 
+import MapView from "@/components/MapView";
 import { createCatch } from "@/lib/api";
-import { CreateCatchInput, FishingMethod } from "@anglog/shared";
+import { CreateCatchInput, FishingMethod, GeoPoint } from "@anglog/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,6 +17,7 @@ export default function NewCatchPage() {
   const [reel, setReel] = useState("");
   const [areaName, setAreaName] = useState("");
   const [memo, setMemo] = useState("");
+  const [location, setLocation] = useState<GeoPoint | null>(null)
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.SubmitEvent) {
@@ -34,6 +36,7 @@ export default function NewCatchPage() {
         memo: memo || undefined,
         imageKeys: [],
         isPublic: true,
+        location: location ?? undefined,
       };
       await createCatch(input);
       router.push("/");
@@ -59,21 +62,30 @@ export default function NewCatchPage() {
 
         <label className="text-sm text-gray-600">釣行日時
           <input type="datetime-local" value={caughtAt} required
-          onChange={(e) => setCaughtAt(e.target.value)} className="border p-2 round w-full"/>
+            onChange={(e) => setCaughtAt(e.target.value)} className="border p-2 rounded w-full" />
         </label>
 
         <input type="number" min="0" placeholder="サイズ(cm)" value={size}
-          onChange={(e) => setSize(e.target.value)} className="border p-2 rounded"/>
+          onChange={(e) => setSize(e.target.value)} className="border p-2 rounded" />
         <input type="number" min="1" step="1" placeholder="数(尾)" value={count}
-          onChange={(e) => setCount(e.target.value)} className="border p-2 rounded"/>
+          onChange={(e) => setCount(e.target.value)} className="border p-2 rounded" />
         <input placeholder="タックル" value={tackle}
-          onChange={(e) => setTackle(e.target.value)} className="border p-2 rounded"/>
+          onChange={(e) => setTackle(e.target.value)} className="border p-2 rounded" />
         <input placeholder="リール" value={reel}
-          onChange={(e) => setReel(e.target.value)} className="border p-2 rounded"/>
+          onChange={(e) => setReel(e.target.value)} className="border p-2 rounded" />
         <input placeholder="エリア" value={areaName}
-          onChange={(e) => setAreaName(e.target.value)} className="border p-2 rounded"/>
+          onChange={(e) => setAreaName(e.target.value)} className="border p-2 rounded" />
         <input placeholder="メモ" value={memo}
-          onChange={(e) => setMemo(e.target.value)} className="border p-2 rounded"/>
+          onChange={(e) => setMemo(e.target.value)} className="border p-2 rounded" />
+        <div className="flex flex-col gap-1">
+          <span className="text-sm text-gray-600">釣り場（地図をタップ）</span>
+          <MapView onPick={setLocation} />
+          {location && (
+            <span className="text-xs text-gray-500">
+              緯度{location.lat.toFixed(5)} / 経度{location.lon.toFixed(5)}
+            </span>
+          )}
+        </div>
 
         <button type="submit" className="bg-blue-600 text-white p-2 rounded">記録する</button>
       </form>
