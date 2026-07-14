@@ -32,7 +32,7 @@
 | 木 07-09 | 1.5 | `GET /catches/me` backend（GSI1 Query・**認証必須**・トークン検証・401確認） | [x] |
 | 金 07-10 | 1.5 | 自分の釣果一覧 web（`/catches/me` 静的ルート・認証付きfetch・CORS typo解消） | [x] |
 | 土 07-11 | 4.0 | `PUT /catches/{id}` backend（所有者チェック）＋ 編集ページ `/catches/[id]/edit` web | [x] |
-| 日 07-12 | 2.0 | `DELETE /catches/{id}` backend ＋ 削除ボタン導線 | [ ] |
+| 日 07-12 | 2.0 | `DELETE /catches/{id}` backend ＋ 削除ボタン導線 | [x]（実施7/14） |
 | 月 07-13 | 1.5 | トップ`/`から一覧への導線整理・予備/デバッグ | [ ] |
 
 **Week1 DoD:** 作成/一覧/詳細/編集/削除/自分の釣果が UI で一通り動く。

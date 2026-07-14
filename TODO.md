@@ -69,15 +69,17 @@
 ## Phase 4. 釣果CRUD（中核）
 - [x] JWTオーソライザ＋認証付き POST /catches（CDK）
 - [x] createCatch ハンドラ（zod検証・キー/GSI/geohash組み立て・PutItem）— curl で201＆DynamoDB確認
-- [~] GET /catches（公開フィード・GSI2 Query・Page<T>・未認証で疎通確認）/ [ ] GET /me/catches（自分）
-- [ ] GET /catches/{id}（詳細）
-- [ ] PUT/DELETE /catches/{id}（編集・削除）
-- [~] web: 一覧 / 詳細 / 作成 / 編集（モバイルファースト・JWT添付fetch）
+- [x] GET /catches（公開フィード・GSI2 Query・Page<T>）/ GET /catches/me（自分・GSI1・認証必須）
+- [x] GET /catches/{id}（詳細・GetItem・404）
+- [x] PUT /catches/{id}（更新・所有者チェック403・GSIキー再構築）/ DELETE /catches/{id}（削除・所有者チェック・204）
+- [x] web: 一覧 / 詳細 / 作成 / 編集 / 削除（モバイルファースト・JWT添付fetch）
   - [x] 作成フォーム（/catches/new・認証付きfetch lib/api.ts・CORS設定・UIから201確認）
   - [x] 一覧ページ（/catches・listCatches・useEffectで取得・新しい順表示）
-  - [ ] 詳細 / 編集
-- [ ] 位置・日時は任意/手入力（**過去日OK**・後から補完可）
-- [ ] 全体公開で表示
+  - [x] 詳細（/catches/[id]・動的ルート）/ 自分の一覧（/catches/me）/ 編集（/catches/[id]/edit・プリフィル）/ 削除ボタン
+- [~] 位置・日時は任意/手入力（**過去日OK**・日時UI済／位置は地図=Phase5で）
+- [x] 全体公開で表示（公開フィード /catches）
+
+**Phase 4 完了（2026-07-14）。method任意化・zod型整合・CORS・所有者チェック等の学びを含む。**
 
 ## Phase 5. 地図（MapLibre）
 - [ ] 地図表示（OSM タイル）
