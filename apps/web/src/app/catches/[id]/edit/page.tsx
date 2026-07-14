@@ -1,7 +1,8 @@
 "use client";
 
+import MapView from "@/components/MapView";
 import { getCatch, updateCatch } from "@/lib/api";
-import { FishingMethod, UpdateCatchInput } from "@anglog/shared";
+import { FishingMethod, GeoPoint, UpdateCatchInput } from "@anglog/shared";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -24,6 +25,8 @@ export default function EditCatchPage() {
   const [areaName, setAreaName] = useState("");
   const [memo, setMemo] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<GeoPoint | null>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     getCatch(params.id)
@@ -37,6 +40,8 @@ export default function EditCatchPage() {
         if (c.reel) setReel(c.reel);
         if (c.areaName) setAreaName(c.areaName);
         if (c.memo) setMemo(c.memo);
+        setLocation(c.location ?? null);
+        setLoaded(true);
       })
       .catch((e) => setError(e instanceof Error ? e.message : "読み込み失敗"));
   }, [params.id]);
@@ -56,6 +61,7 @@ export default function EditCatchPage() {
         reel: reel || undefined,
         areaName: areaName || undefined,
         memo: memo || undefined,
+        location: location ?? undefined,
       };
       await updateCatch(params.id, input);
       router.push(`/catches/${params.id}`);
@@ -96,6 +102,7 @@ export default function EditCatchPage() {
           onChange={(e) => setAreaName(e.target.value)} className="border p-2 rounded" />
         <input placeholder="メモ" value={memo}
           onChange={(e) => setMemo(e.target.value)} className="border p-2 rounded" />
+        {loaded && <MapView value={location} onPick={setLocation} />}
 
         <button type="submit" className="bg-blue-600 text-white p-2 rounded">更新する</button>
       </form>
