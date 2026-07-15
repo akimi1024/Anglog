@@ -4,6 +4,7 @@ import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import ngeohash from "ngeohash";
 import { z } from "zod";
 import type { Catch } from "@anglog/shared";
+import { fetchWeather } from "../weather";
 
 const createCatchSchema = z.object({
   caughtAt: z.string(),
@@ -33,8 +34,14 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
 
   // 2. 入力を実行時検証（壊れていたら400）
   const parsed = createCatchSchema.safeParse(JSON.parse(event.body ?? "{}"));
-  if(!parsed.success){
-    return {statusCode: 400, body: JSON.stringify({message: "invalid input", issues: parsed.error.issues})};
+  if (!parsed.success) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        message: "invalid input",
+        issues: parsed.error.issues,
+      }),
+    };
   }
   const input = parsed.data;
 
@@ -43,6 +50,10 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
   const now = new Date().toISOString();
   const geohash = input.location
     ? ngeohash.encode(input.location.lat, input.location.lon)
+    : undefined;
+
+  const weather = input.location
+    ? await fetchWeather(input.location, input.caughtAt)
     : undefined;
 
   // 4. DynamoDBアイテムを組み立て（ドメイン属性 ＋ インデックスキー）
@@ -55,6 +66,7 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
     catchId,
     userId,
     geohash,
+    weather,
     createdAt: now,
     updatedAt: now,
   };
@@ -79,12 +91,13 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
     userId,
     ...input,
     geohash,
+    weather,
     createdAt: now,
     updatedAt: now,
   };
   return {
     statusCode: 201,
-    headers: {"content-type": "application/json"},
-    body: JSON.stringify(created)
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(created),
   };
 };
