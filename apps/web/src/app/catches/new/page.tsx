@@ -2,6 +2,7 @@
 
 import MapView from "@/components/MapView";
 import { createCatch } from "@/lib/api";
+import { toHalfWidthNumber } from "@/lib/number";
 import { CreateCatchInput, FishingMethod, GeoPoint } from "@anglog/shared";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,13 +24,27 @@ export default function NewCatchPage() {
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     setError(null);
+
+    const sizeNum = size ? Number(toHalfWidthNumber(size)) : undefined;
+    const countNum = count ? Number(toHalfWidthNumber(count)) : undefined;
+
+    if (sizeNum !== undefined && (!Number.isFinite(sizeNum) || sizeNum < 0)) {
+      setError("サイズは0以上の数値で入力してください");
+      return;
+    }
+
+    if (countNum !== undefined && (!Number.isFinite(countNum) || countNum < 0)) {
+      setError("釣果数は0以上の数値で入力してください");
+      return;
+    }
+
     try {
       const input: CreateCatchInput = {
         species,
         method,
         caughtAt: new Date(caughtAt).toISOString(),
-        size: size ? Number(size) : undefined,
-        count: count ? Number(count) : undefined,
+        size: sizeNum,
+        count: countNum,
         tackle: tackle || undefined,
         reel: reel || undefined,
         areaName: areaName || undefined,
@@ -65,9 +80,9 @@ export default function NewCatchPage() {
             onChange={(e) => setCaughtAt(e.target.value)} className="border p-2 rounded w-full" />
         </label>
 
-        <input type="number" min="0" placeholder="サイズ(cm)" value={size}
+        <input type="text" inputMode="numeric" placeholder="サイズ(cm)" value={size}
           onChange={(e) => setSize(e.target.value)} className="border p-2 rounded" />
-        <input type="number" min="1" step="1" placeholder="数(尾)" value={count}
+        <input type="text" inputMode="numeric" placeholder="数(尾)" value={count}
           onChange={(e) => setCount(e.target.value)} className="border p-2 rounded" />
         <input placeholder="タックル" value={tackle}
           onChange={(e) => setTackle(e.target.value)} className="border p-2 rounded" />

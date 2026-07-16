@@ -1,16 +1,11 @@
 "use client";
 
 import { listMyCatches } from "@/lib/api";
-import { Catch, FishingMethod } from "@anglog/shared";
+import { methodToLabel } from "@/lib/catch";
+import { Catch } from "@anglog/shared";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const methodLabel: Record<FishingMethod, string> = {
-  lure: "ルアー",
-  bait: "エサ",
-  fly: "フライ",
-  other: "その他",
-}
 
 export default function MyPage() {
   const [catches, setCatches] = useState<Catch[]>([]);
@@ -32,7 +27,7 @@ export default function MyPage() {
             <Link href={`/catches/${c.catchId}`}>
               <div className="font-bold">{c.species}</div>
               <div className="text-sm text-gray-600">
-                {c.method ? methodLabel[c.method] : ""}
+                {methodToLabel(c.method)}
                 {c.size ? `${c.size}cm` : ""}
                 {c.count ? `${c.count}尾` : ""}
               </div>

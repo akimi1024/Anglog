@@ -1,18 +1,13 @@
 "use client";
 
 import { deleteCatch, getCatch } from "@/lib/api";
-import { Catch, FishingMethod } from "@anglog/shared";
+import { Catch } from "@anglog/shared";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import MapView from "@/components/MapView";
+import { methodToLabel } from "@/lib/catch";
 
-const methodLabel: Record<FishingMethod, string> = {
-  lure: "ルアー",
-  bait: "エサ",
-  fly: "フライ",
-  other: "その他",
-}
 
 export default function CatchDetailPage() {
   const router = useRouter();
@@ -59,7 +54,7 @@ export default function CatchDetailPage() {
         {item.method ?
           <div>
             <dt className="text-gray-500 inline">釣り方</dt>
-            <dd className="inline">{methodLabel[item.method]}</dd>
+            <dd className="inline">{methodToLabel(item.method)}</dd>
           </div> : null
         }
         {item.size ? <div>
