@@ -7,6 +7,8 @@ import {
 import { APIGatewayProxyHandlerV2WithJWTAuthorizer } from "aws-lambda";
 import { z } from "zod";
 import ngeohash from "ngeohash";
+import { GeoPoint } from "@anglog/shared";
+import { fetchWeather } from "../weather";
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },
@@ -98,6 +100,17 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
   } else {
     delete merged.GSI3PK;
     delete merged.GSI3SK;
+  }
+
+  const oldLoc = got.Item.location as GeoPoint | undefined;
+  const newLoc = merged.location as GeoPoint | undefined;
+  const locChanged = oldLoc?.lat !== newLoc?.lat || oldLoc?.lon !== newLoc?.lon;
+  const timeChanged = got.Item.caughtAt !== merged.caughtAt;
+
+  if (newLoc && (locChanged || timeChanged)) {
+    merged.weather = await fetchWeather(newLoc, merged.caughtAt as string);
+  } else if (!newLoc) {
+    delete merged.weather;
   }
 
   // 上書き
