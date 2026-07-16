@@ -57,6 +57,14 @@ export default function CatchDetailPage() {
             <dd className="inline">{methodToLabel(item.method)}</dd>
           </div> : null
         }
+        {item.weather && (
+          <div className="mt-2">
+            <dt className="text-gray-500 inline">天気：</dt>
+            <dd className="inline">
+              {item.weather.condition} / {item.weather.temperature}℃ / 風 {item.weather.windSpeed}km/h / {item.weather.pressure}hPa
+            </dd>
+          </div>
+        )}
         {item.size ? <div>
           <dt className="text-gray-500 inline">サイズ</dt>
           <dd className="inline">{item.size}cm</dd></div> : null
