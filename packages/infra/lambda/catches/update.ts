@@ -25,7 +25,7 @@ const updateCatchSchema = z.object({
   reel: z.string().optional(),
   memo: z.string().optional(),
   imageKeys: z.array(z.string()).optional(),
-  location: z.object({ lat: z.number(), lon: z.number() }).optional(),
+  location: z.object({ lat: z.number(), lon: z.number() }).nullable().optional(),
   areaName: z.string().optional(),
   isPublic: z.boolean().optional(),
 });
@@ -79,6 +79,10 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
     ...updates,
     updatedAt: now,
   };
+
+  if(merged.location === null){
+    delete merged.location;
+  }
 
   // 派生値の作り直し
   const geohash = merged.location

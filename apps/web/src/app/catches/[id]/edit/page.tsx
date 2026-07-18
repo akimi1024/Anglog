@@ -75,7 +75,7 @@ export default function EditCatchPage() {
         reel: reel || undefined,
         areaName: areaName || undefined,
         memo: memo || undefined,
-        location: location ?? undefined,
+        location: location,
       };
       await updateCatch(params.id, input);
       router.push(`/catches/${params.id}`);
@@ -117,7 +117,11 @@ export default function EditCatchPage() {
         <input placeholder="メモ" value={memo}
           onChange={(e) => setMemo(e.target.value)} className="border p-2 rounded" />
         {loaded && <MapView value={location} onPick={setLocation} />}
-
+        {loaded && (
+          <button type="button" onClick={() => setLocation(null)} className="text-red-600 underline test-sm self-start">
+            位置を削除
+          </button>
+        )}
         <button type="submit" className="bg-blue-600 text-white p-2 rounded">更新する</button>
       </form>
     </main>

@@ -1,4 +1,4 @@
-import type { GeoPoint, BoundingBox } from "./geo"
+import type { GeoPoint, BoundingBox } from "./geo";
 
 // 釣り方
 export type FishingMethod = "lure" | "bait" | "fly" | "other";
@@ -33,7 +33,6 @@ export interface Catch {
   updatedAt: string;
 }
 
-
 // 作成時の入力
 export type CreateCatchInput = Omit<
   Catch,
@@ -41,7 +40,9 @@ export type CreateCatchInput = Omit<
 >;
 
 // 更新時の入力
-export type UpdateCatchInput = Partial<CreateCatchInput>;
+export type UpdateCatchInput = Partial<Omit<CreateCatchInput, "location">> & {
+  location?: GeoPoint | null;
+};
 
 export interface CatchSearchQuery {
   species?: string;

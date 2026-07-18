@@ -13,6 +13,7 @@ type Props = {
 export default function MapView({ onPick, value }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<maplibregl.Marker | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const onPickRef = useRef(onPick);
 
   useEffect(() => {
@@ -35,16 +36,11 @@ export default function MapView({ onPick, value }: Props) {
         },
         layers: [{ id: "osm", type: "raster", source: "osm" }],
       },
-      center: [139.767, 35.681],
-      zoom: 10,
+      center: value ? [value.lon, value.lat] : [139.767, 35.681],
+      zoom: value ? 12 : 10,
     });
 
-    if (value) {
-      map.setCenter([value.lon, value.lat]);
-      markerRef.current = new maplibregl.Marker()
-        .setLngLat([value.lon, value.lat])
-        .addTo(map);
-    }
+    mapRef.current = map;
 
     map.on("click", (e) => {
       if (!onPickRef.current) return;
@@ -57,8 +53,22 @@ export default function MapView({ onPick, value }: Props) {
       onPickRef.current?.({ lat, lon: lng })
     })
 
-    return () => map.remove();
+    return () => { map.remove(); mapRef.current = null; markerRef.current = null; };
   }, []);
 
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (value) {
+      if (markerRef.current) {
+        markerRef.current.setLngLat([value.lon, value.lat]);
+      } else {
+        markerRef.current = new maplibregl.Marker().setLngLat([value.lon, value.lat]).addTo(map);
+      }
+    }else{
+      markerRef.current?.remove();
+      markerRef.current = null;
+    }
+  }, [value]);
   return <div ref={containerRef} style={{ width: "100%", height: "70vh" }} className="rounded" />;
 }
