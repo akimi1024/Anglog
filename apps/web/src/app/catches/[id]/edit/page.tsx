@@ -118,7 +118,7 @@ export default function EditCatchPage() {
           onChange={(e) => setMemo(e.target.value)} className="border p-2 rounded" />
         {loaded && <MapView value={location} onPick={setLocation} />}
         {loaded && (
-          <button type="button" onClick={() => setLocation(null)} className="text-red-600 underline test-sm self-start">
+          <button type="button" onClick={() => setLocation(null)} className="text-red-600 underline text-sm self-start">
             位置を削除
           </button>
         )}
