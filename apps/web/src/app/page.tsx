@@ -9,7 +9,7 @@ export default function Home(){
       </div>
       <nav className="flex flex-col gap-3">
         <Link href="/catches" className="border rounded p-3 text-center">みんなの記録</Link>
-        <Link href="/catches/me" className="border rounded p-3 text-center">自分を記録</Link>
+        <Link href="/catches/me" className="border rounded p-3 text-center">自分の記録</Link>
         <Link href="/catches/new" className="border rounded p-3 text-center">+ 釣果を記録</Link>
       </nav>
     </main>

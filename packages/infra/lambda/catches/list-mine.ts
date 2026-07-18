@@ -26,7 +26,7 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
   event,
 ) => {
   const userId = event.requestContext.authorizer.jwt.claims.sub as string;
-  const limit = Number(event.queryStringParameters?.limit ?? "20");
+  const limit = Number(event.queryStringParameters?.limit) || 20;
   const cursor = event.queryStringParameters?.cursor;
 
   const res = await client.send(

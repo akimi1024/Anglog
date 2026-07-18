@@ -94,11 +94,16 @@ export default function NewCatchPage() {
           onChange={(e) => setMemo(e.target.value)} className="border p-2 rounded" />
         <div className="flex flex-col gap-1">
           <span className="text-sm text-gray-600">釣り場（地図をタップ）</span>
-          <MapView onPick={setLocation} />
+          <MapView value={location} onPick={setLocation} />
           {location && (
-            <span className="text-xs text-gray-500">
-              緯度{location.lat.toFixed(5)} / 経度{location.lon.toFixed(5)}
-            </span>
+            <>
+              <span className="text-xs text-gray-500">
+                緯度{location.lat.toFixed(5)} / 経度{location.lon.toFixed(5)}
+              </span>
+              <button type="button" onClick={() => setLocation(null)} className="text-red-600 underline text-sm self-start">
+                位置を削除
+              </button>
+            </>
           )}
         </div>
 

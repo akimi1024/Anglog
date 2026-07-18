@@ -23,7 +23,7 @@ function decodeCursor(
 }
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
-  const limit = Number(event.queryStringParameters?.limit ?? "20");
+  const limit = Number(event.queryStringParameters?.limit) || 20;
   const cursor = event.queryStringParameters?.cursor;
 
   const res = await client.send(
@@ -40,6 +40,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
   const page: Page<Catch> = {
     items: (res.Items ?? []) as Catch[],
+    nextCursor: encodeCursor(res.LastEvaluatedKey),
   };
   return {
     statusCode: 200,

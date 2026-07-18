@@ -22,7 +22,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     }),
   );
 
-  if (!res) {
+  if (!res.Item) {
     return {
       statusCode: 404,
       body: JSON.stringify({ message: "not found" }),

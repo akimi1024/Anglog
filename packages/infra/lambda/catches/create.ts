@@ -9,8 +9,8 @@ import { fetchWeather } from "../weather";
 const createCatchSchema = z.object({
   caughtAt: z.string(),
   species: z.string().min(1),
-  size: z.number().optional(),
-  count: z.number().optional(),
+  size: z.number().nonnegative().optional(),
+  count: z.number().int().nonnegative().optional(),
   method: z.enum(["lure", "bait", "fly", "other"]).optional(),
   tackle: z.string().optional(),
   reel: z.string().optional(),
