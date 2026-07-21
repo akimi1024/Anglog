@@ -1,5 +1,6 @@
 "use client";
 
+import CatchCard from "@/components/CatchCard";
 import { listMyCatches } from "@/lib/api";
 import { methodToLabel } from "@/lib/catch";
 import { Catch } from "@anglog/shared";
@@ -21,20 +22,10 @@ export default function MyPage() {
     <main className="max-w-md mx-auto p-4">
       <h1 className="text-xl font-bold mb-4">自分の釣果</h1>
       {error && (<p className="text-red-600 mb-3">{error} (<Link href="/login" className="underline">ログイン</Link>)</p>)}
-      <ul className="flex-col gap-3">
+      <ul className="flex flex-col gap-3">
         {catches.map((c) => (
-          <li key={c.catchId} className="border p-3 rounded">
-            <Link href={`/catches/${c.catchId}`}>
-              <div className="font-bold">{c.species}</div>
-              <div className="text-sm text-gray-600">
-                {methodToLabel(c.method)}
-                {c.size ? `${c.size}cm` : ""}
-                {c.count ? `${c.count}尾` : ""}
-              </div>
-              <div className="text-xs text-gray-600">
-                {new Date(c.caughtAt).toLocaleString("ja-JP")}
-              </div>
-            </Link>
+          <li key={c.catchId}>
+            <CatchCard item={c} />
           </li>
         ))}
       </ul>
