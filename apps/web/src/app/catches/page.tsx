@@ -5,6 +5,7 @@ import { Catch } from "@anglog/shared";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { methodToLabel } from "@/lib/catch";
+import CatchCard from "@/components/CatchCard";
 
 
 export default function CatchesPage() {
@@ -26,18 +27,8 @@ export default function CatchesPage() {
       {error && <p className="text-red-600 mb-3">{error}</p>}
       <ul className="flex flex-col gap-3">
         {catches.map((c) => (
-          <li key={c.catchId} className="border p-3 rounded">
-            <Link href={`/catches/${c.catchId}`}>
-              <div className="font-bold">{c.species}</div>
-              <div className="text-sm text-gray-600">
-                {methodToLabel(c.method)}
-                {c.size ? `/${c.size}cm` : ""}
-                {c.count ? `/${c.count}尾` : ""}
-              </div>
-              <div className="text-xs text-gray-400">
-                {new Date(c.caughtAt).toLocaleString("ja-JP")}
-              </div>
-            </Link>
+          <li key={c.catchId}>
+            <CatchCard item={c} />
           </li>
         ))}
       </ul>
