@@ -1,9 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useState } from "react";
 import { login } from "@/lib/auth"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,32 +20,34 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/");
       setError(null);
-    } catch(err) {
-      setError(err instanceof Error ? err.message: "ログインに失敗しました");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ログインに失敗しました");
     }
   }
 
   return (
     <main className="max-w-sm mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4">ログイン</h1>
-      {error && <p className="text-red-600 mb-3">{error}</p>}
-      <form onSubmit={handleLogin} className="flex flex-col gap-3">
-        <input type="email" placeholder="メールアドレス" value={email}
-          onChange={(e) => setEmail(e.target.value)} required
-          className="border p-2 rounded" />
-        <input type="password" placeholder="パスワード" value={password}
-          onChange={(e) => setPassword(e.target.value)} required
-          className="border p-2 rounded" />
-        <button type="submit" className="bg-blue-600 text-white p-2 rounded">
-          ログイン
-        </button>
-        <p className="mt-4 text-sm text-center text-gray-600">
-          アカウントをお持ちでない方{" "}
-          <Link href="/signup" className="text-blue-600 underline">
-            新規登録
-          </Link>
-        </p>
-      </form>
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="text-lg">ログイン</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="email">メールアドレス</Label>
+              <Input id="email" type="email" value={email} required onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="password">パスワード</Label>
+              <Input id="password" type="password" value={password} required onChange={(e) => setPassword(e.target.value)} />
+            </div>
+
+            <Button type="submit" className="mt-1">ログイン</Button>
+          </form>
+        </CardContent>
+      </Card>
     </main>
   );
 }
