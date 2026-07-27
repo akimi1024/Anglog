@@ -1,7 +1,7 @@
 "use client";
 
 import MapView from "@/components/MapView";
-import { createCatch } from "@/lib/api";
+import { createCatch, getUploadUrl, updateCatch } from "@/lib/api";
 import { toHalfWidthNumber } from "@/lib/number";
 import { CreateCatchInput, FishingMethod, GeoPoint } from "@anglog/shared";
 import { useRouter } from "next/navigation";
@@ -24,7 +24,9 @@ export default function NewCatchPage() {
   const [reel, setReel] = useState("");
   const [areaName, setAreaName] = useState("");
   const [memo, setMemo] = useState("");
-  const [location, setLocation] = useState<GeoPoint | null>(null)
+  const [location, setLocation] = useState<GeoPoint | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.SubmitEvent) {
@@ -44,6 +46,8 @@ export default function NewCatchPage() {
       return;
     }
 
+    setSubmitting(true);
+
     try {
       const input: CreateCatchInput = {
         species,
@@ -59,11 +63,28 @@ export default function NewCatchPage() {
         isPublic: true,
         location: location ?? undefined,
       };
-      await createCatch(input);
-      router.push("/");
+      const created = await createCatch(input);
+      try {
+        if (file) {
+          const { uploadUrl, key } = await getUploadUrl(created.catchId, file.type);
+          await fetch(uploadUrl, {
+            method: "PUT",
+            headers: { "Content-Type": file.type },
+            body: file,
+          });
+          await updateCatch(created.catchId, { imageKeys: [key] });
+        }
+      } catch {
+        // 画像だけ失敗：釣果は作成済みなので無視して進む
+      }
+      router.push(`/catches/${created.catchId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "作成に失敗しました");
+      setSubmitting(false);
+      return;
     }
+
+
   }
 
   return (
@@ -134,6 +155,16 @@ export default function NewCatchPage() {
             onChange={(e) => setMemo(e.target.value)} />
         </div>
 
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="photo">写真</Label>
+          {file && (
+            <img src={URL.createObjectURL(file)} alt="" className="aspect-square w-40 rounded-xl border object-cover" />
+          )}
+          <Input id="photo" type="file" accept="image/*"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+        </div>
+
+
         {/* 位置 */}
         <div className="flex flex-col gap-1.5">
           <Label>釣り場（地図をタップ）</Label>
@@ -154,7 +185,9 @@ export default function NewCatchPage() {
           )}
         </div>
 
-        <Button type="submit" className="mt-1">記録する</Button>
+        <Button type="submit" disabled={submitting} className="mt-1">
+          {submitting ? "記録中・・・" : "記録する"}
+        </Button>
       </form>
     </main>
   )
