@@ -1,7 +1,7 @@
 "use client";
 
 import MapView from "@/components/MapView";
-import { getCatch, updateCatch } from "@/lib/api";
+import { getCatch, getUploadUrl, updateCatch } from "@/lib/api";
 import { toHalfWidthNumber } from "@/lib/number";
 import { FishingMethod, GeoPoint, UpdateCatchInput } from "@anglog/shared";
 import { useParams, useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { imageUrl } from "@/lib/image";
 
 // ISO(保存値) → datetime-local の "YYYY-MM-DDTHH:mm"（ローカル時刻）へ
 function toLocalInput(iso: string): string {
@@ -33,6 +34,8 @@ export default function EditCatchPage() {
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<GeoPoint | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [imageKey, setImageKey] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     getCatch(params.id)
@@ -48,6 +51,7 @@ export default function EditCatchPage() {
         if (c.memo) setMemo(c.memo);
         setLocation(c.location ?? null);
         setLoaded(true);
+        setImageKey(c.imageKeys?.[0] ?? null);
       })
       .catch((e) => setError(e instanceof Error ? e.message : "読み込み失敗"));
   }, [params.id]);
@@ -89,47 +93,28 @@ export default function EditCatchPage() {
     }
   }
 
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const { uploadUrl, key } = await getUploadUrl(params.id, file.type);
+      await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      await updateCatch(params.id, { imageKeys: [key] });
+      setImageKey(key);
+    } catch {
+      setError("画像アップロードに失敗しました");
+    } finally {
+      setUploading(false);
+    }
+  }
+
   return (
-    // <main className="max-w-md mx-auto p-4">
-    //   <h1 className="text-xl font-bold mb-4">釣果を編集</h1>
-    //   {error && <p className="text-red-600 mb-3">{error}</p>}
-    //   <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-    //     <input placeholder="魚種" value={species} required
-    //       onChange={(e) => setSpecies(e.target.value)} className="border p-2 rounded" />
-
-    //     <select value={method} onChange={(e) => setMethod(e.target.value as FishingMethod)} className="border p-2 rounded">
-    //       <option value="lure">ルアー</option>
-    //       <option value="bait">エサ</option>
-    //       <option value="fly">フライ</option>
-    //       <option value="other">その他</option>
-    //     </select>
-
-    //     <label className="text-sm text-gray-600">釣行日時
-    //       <input type="datetime-local" value={caughtAt} required
-    //         onChange={(e) => setCaughtAt(e.target.value)} className="border p-2 rounded w-full" />
-    //     </label>
-
-    //     <input type="text" placeholder="サイズ(cm)" value={size}
-    //       onChange={(e) => setSize(e.target.value)} className="border p-2 rounded" />
-    //     <input type="text" placeholder="数(尾)" value={count}
-    //       onChange={(e) => setCount(e.target.value)} className="border p-2 rounded" />
-    //     <input placeholder="タックル" value={tackle}
-    //       onChange={(e) => setTackle(e.target.value)} className="border p-2 rounded" />
-    //     <input placeholder="リール" value={reel}
-    //       onChange={(e) => setReel(e.target.value)} className="border p-2 rounded" />
-    //     <input placeholder="エリア" value={areaName}
-    //       onChange={(e) => setAreaName(e.target.value)} className="border p-2 rounded" />
-    //     <input placeholder="メモ" value={memo}
-    //       onChange={(e) => setMemo(e.target.value)} className="border p-2 rounded" />
-    //     {loaded && <MapView value={location} onPick={setLocation} />}
-    //     {loaded && (
-    //       <button type="button" onClick={() => setLocation(null)} className="text-red-600 underline text-sm self-start">
-    //         位置を削除
-    //       </button>
-    //     )}
-    //     <button type="submit" className="bg-blue-600 text-white p-2 rounded">更新する</button>
-    //   </form>
-    // </main>
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       <h1 className="text-xl font-bold tracking-tight">釣果を編集</h1>
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -195,6 +180,15 @@ export default function EditCatchPage() {
           <Label htmlFor="memo">メモ</Label>
           <Textarea id="memo" value={memo} rows={3}
             onChange={(e) => setMemo(e.target.value)} />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="photo">写真</Label>
+          {imageKey && (
+            <img src={imageUrl(imageKey)} alt="" className="aspect-square w-40 rounded-xl border object-cover" />
+          )}
+          <Input id="photo" type="file" accept="image/*" onChange={handleFile} disabled={uploading} />
+          {uploading && <span className="text-xs text-muted-foreground">アップロード中・・・</span>}
         </div>
 
         {/* 位置 */}

@@ -4,16 +4,17 @@ import { MapPin } from "lucide-react";
 import Link from "next/link";
 import WeatherIcon from "@/components/WeatherIcon";
 import { Fish } from "lucide-react";
+import { imageUrl } from "@/lib/image";
 
 export default function CatchCard({ item }: { item: Catch }) {
-  const imageUrl = item.imageKeys?.[0];
+  const src = imageUrl(item.imageKeys?.[0]);
 
   return (
     <Link href={`/catches/${item.catchId}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40">
       {/* 画像 or NO IMAGE（正方形で高さ統一） */}
       <div className="relative aspect-square bg-muted">
-        {imageUrl ? (
-          <img src={imageUrl} alt={item.species} className="h-full w-full object-cover" />
+        {src ? (
+          <img src={src} alt={item.species} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground/40">
             <Fish className="h-8 w-8" />
