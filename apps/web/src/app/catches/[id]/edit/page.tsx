@@ -31,11 +31,11 @@ export default function EditCatchPage() {
   const [reel, setReel] = useState("");
   const [areaName, setAreaName] = useState("");
   const [memo, setMemo] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<GeoPoint | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [imageKey, setImageKey] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getCatch(params.id)
