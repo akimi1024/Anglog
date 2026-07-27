@@ -14,7 +14,7 @@ export default function CatchCard({ item }: { item: Catch }) {
       {/* 画像 or NO IMAGE（正方形で高さ統一） */}
       <div className="relative aspect-square bg-muted">
         {src ? (
-          <img src={src} alt={item.species} className="h-full w-full object-cover" />
+          <img src={src} alt={item.species} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground/40">
             <Fish className="h-8 w-8" />
