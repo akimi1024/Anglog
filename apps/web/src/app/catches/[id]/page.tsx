@@ -11,6 +11,7 @@ import { methodToLabel, methodChip } from "@/lib/catch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Pencil, Trash2, MapPin, Thermometer, Wind, Gauge } from "lucide-react";
+import { imageUrl } from "@/lib/image";
 
 
 export default function CatchDetailPage() {
@@ -47,6 +48,8 @@ export default function CatchDetailPage() {
       setError(e instanceof Error ? e.message : "削除に失敗しました");
     }
   }
+
+  const photo = imageUrl(item.imageKeys?.[0]);
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
@@ -91,6 +94,10 @@ export default function CatchDetailPage() {
           </div>
         )}
       </div>
+
+      {photo && (
+        <img src={photo} alt={item.species} className="w-full rounded-2xl border object-cover" />
+      )}
 
       {/* 天気カード: 計器っぽくmonoで並べる */}
       {item.weather && (

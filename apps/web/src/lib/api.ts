@@ -88,3 +88,21 @@ export async function deleteCatch(id: string): Promise<void> {
     throw new Error(`削除に失敗しました (${res.status})`);
   }
 }
+
+export async function getUploadUrl(
+  id: string,
+  contentType: string,
+): Promise<{ uploadUrl: string; key: string }> {
+  const token = await getIdToken();
+  const res = await fetch(`${API_URL}/catches/${id}/image-url`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ contentType }),
+  });
+  if (!res.ok)
+    throw new Error(`アップロードURL取得に失敗しました (${res.status})`);
+  return res.json();
+}

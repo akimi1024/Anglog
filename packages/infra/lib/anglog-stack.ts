@@ -20,6 +20,8 @@ import {
   HttpMethod,
 } from "aws-cdk-lib/aws-apigatewayv2";
 import { TARGET_PARTITIONS } from "aws-cdk-lib/cx-api";
+import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
+import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 
 export class AnglogStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -63,6 +65,15 @@ export class AnglogStack extends Stack {
           allowedHeaders: ["*"],
         },
       ],
+    });
+
+    // 非公開S3を CloudFront 経由で公開配信（OAC）
+    const imageCdn = new cloudfront.Distribution(this, "ImageCdn", {
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(imageBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+      },
     });
 
     const userPool = new cognito.UserPool(this, "UserPool", {
@@ -214,12 +225,31 @@ export class AnglogStack extends Stack {
       },
     });
 
+    const uploadUrlFn = new NodejsFunction(this, "UploadUrlFunction", {
+      entry: "lambda/catches/upload-url.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+        BUCKET_NAME: imageBucket.bucketName,
+      },
+    });
+
+    new CfnOutput(this, "ImageCdnDomain", {
+      value: imageCdn.distributionDomainName,
+    });
+
+    // table権限
     table.grantWriteData(createCatchFn);
     table.grantReadData(listCatchesFn);
     table.grantReadData(getCatchFn);
     table.grantReadData(listMyCatchesFn);
     table.grantReadWriteData(updateCatchFn);
     table.grantReadWriteData(deleteCatchFn);
+    table.grantReadData(uploadUrlFn);
+
+    // S3権限
+    imageBucket.grantPut(uploadUrlFn);
 
     httpApi.addRoutes({
       path: "/catches",
@@ -272,6 +302,16 @@ export class AnglogStack extends Stack {
       integration: new HttpLambdaIntegration(
         "DeleteCatchesIntegration",
         deleteCatchFn,
+      ),
+      authorizer,
+    });
+
+    httpApi.addRoutes({
+      path: "/catches/{id}/image-url",
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration(
+        "UploadUrlIntegration",
+        uploadUrlFn,
       ),
       authorizer,
     });
