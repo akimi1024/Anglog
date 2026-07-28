@@ -49,8 +49,6 @@ export default function CatchDetailPage() {
     }
   }
 
-  const photo = imageUrl(item.imageKeys?.[0]);
-
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
       {/* ナビ + 操作 */}
@@ -95,8 +93,12 @@ export default function CatchDetailPage() {
         )}
       </div>
 
-      {photo && (
-        <img src={photo} alt={item.species} className="w-full rounded-2xl border object-cover" />
+      {item.imageKeys.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {item.imageKeys.map((key) => (
+            <img key={key} src={imageUrl(key)} alt={item.species} className="w-full rounded-2xl border object-cover" />
+          ))}
+        </div>
       )}
 
       {/* 天気カード: 計器っぽくmonoで並べる */}

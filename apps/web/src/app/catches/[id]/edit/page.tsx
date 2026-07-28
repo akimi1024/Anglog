@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { imageUrl } from "@/lib/image";
+import { X } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 
 // ISO(保存値) → datetime-local の "YYYY-MM-DDTHH:mm"（ローカル時刻）へ
 function toLocalInput(iso: string): string {
@@ -33,7 +35,7 @@ export default function EditCatchPage() {
   const [memo, setMemo] = useState("");
   const [location, setLocation] = useState<GeoPoint | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [imageKey, setImageKey] = useState<string | null>(null);
+  const [imageKeys, setImageKeys] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +53,7 @@ export default function EditCatchPage() {
         if (c.memo) setMemo(c.memo);
         setLocation(c.location ?? null);
         setLoaded(true);
-        setImageKey(c.imageKeys?.[0] ?? null);
+        setImageKeys(c.imageKeys ?? []);
       })
       .catch((e) => setError(e instanceof Error ? e.message : "読み込み失敗"));
   }, [params.id]);
@@ -93,24 +95,42 @@ export default function EditCatchPage() {
     }
   }
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function handleAddFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
     setUploading(true);
     setError(null);
     try {
-      const { uploadUrl, key } = await getUploadUrl(params.id, file.type);
-      await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      await updateCatch(params.id, { imageKeys: [key] });
-      setImageKey(key);
+      const added: string[] = [];
+      for (const file of files) {
+        const { uploadUrl, key } = await getUploadUrl(params.id, file.type);
+        await fetch(uploadUrl, {
+          method: "PUT",
+          headers: {
+            "content-Type": file.type
+          },
+          body: file
+        })
+        added.push(key);
+      }
+      const next = [...imageKeys, ...added];
+      await updateCatch(params.id, { imageKeys: next });
+      setImageKeys(next);
     } catch {
       setError("画像アップロードに失敗しました");
     } finally {
       setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleRemoveImage(key: string) {
+    const next = imageKeys.filter((k) => k !== key);
+    try {
+      await updateCatch(params.id, { imageKeys: next });
+      setImageKeys(next);
+    } catch {
+      setError("画像の削除に失敗しました");
     }
   }
 
@@ -183,12 +203,25 @@ export default function EditCatchPage() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="photo">写真</Label>
-          {imageKey && (
-            <img src={imageUrl(imageKey)} alt="" className="aspect-square w-40 rounded-xl border object-cover" />
+          <Label>写真</Label>
+          {imageKeys.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {imageKeys.map((key) => (
+                <div key={key} className="relative aspect-square">
+                  <img src={imageUrl(key)} alt="" className="absolute inset-0 h-full w-full rounded-lg border object-cover" />
+                  <button type="button" onClick={() => handleRemoveImage(key)} aria-label="写真を削除"
+                    className="absolute right-1 top-1 rounded-full bg-background/80 p-1 text-destructive backdrop-blur hover:bg-background" >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
-          <Input id="photo" type="file" accept="image/*" onChange={handleFile} disabled={uploading} />
-          {uploading && <span className="text-xs text-muted-foreground">アップロード中・・・</span>}
+          <input id="photo" type="file" accept="image/*" multiple onChange={handleAddFiles} disabled={uploading} className="hidden" />
+          <label htmlFor="photo" className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm hover:bg-accent ${uploading ? "pointer-events-none opacity-50" : ""}`}>
+            <ImagePlus className="h-4 w-4" />
+            {uploading ? "アップロード中…" : "写真を追加"}
+          </label>
         </div>
 
         {/* 位置 */}

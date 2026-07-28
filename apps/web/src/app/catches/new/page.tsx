@@ -5,12 +5,13 @@ import { createCatch, getUploadUrl, updateCatch } from "@/lib/api";
 import { toHalfWidthNumber } from "@/lib/number";
 import { CreateCatchInput, FishingMethod, GeoPoint } from "@anglog/shared";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ImagePlus, X } from "lucide-react";
 
 
 export default function NewCatchPage() {
@@ -25,9 +26,15 @@ export default function NewCatchPage() {
   const [areaName, setAreaName] = useState("");
   const [memo, setMemo] = useState("");
   const [location, setLocation] = useState<GeoPoint | null>(null);
-  const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const previews = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
+
+  useEffect(() => {
+    return () => previews.forEach((u) => URL.revokeObjectURL(u));
+  }, [previews]);
 
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
@@ -65,14 +72,18 @@ export default function NewCatchPage() {
       };
       const created = await createCatch(input);
       try {
-        if (file) {
+        const keys: string[] = [];
+        for (const file of files) {
           const { uploadUrl, key } = await getUploadUrl(created.catchId, file.type);
           await fetch(uploadUrl, {
             method: "PUT",
             headers: { "Content-Type": file.type },
-            body: file,
+            body: file
           });
-          await updateCatch(created.catchId, { imageKeys: [key] });
+          keys.push(key);
+        }
+        if (keys.length > 0) {
+          await updateCatch(created.catchId, { imageKeys: keys });
         }
       } catch {
         // 画像だけ失敗：釣果は作成済みなので無視して進む
@@ -83,8 +94,10 @@ export default function NewCatchPage() {
       setSubmitting(false);
       return;
     }
+  }
 
-
+  async function handleRemoveImage(target: File) {
+    setFiles((prev) => prev.filter((f) => f !== target));
   }
 
   return (
@@ -156,14 +169,30 @@ export default function NewCatchPage() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="photo">写真</Label>
-          {file && (
-            <img src={URL.createObjectURL(file)} alt="" className="aspect-square w-40 rounded-xl border object-cover" />
+          <Label>写真</Label>
+          {files.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {files.map((f, i) => (
+                <div key={`${f.name}-${f.size}-${f.lastModified}`} className="relative aspect-square">
+                  <img src={previews[i]} alt="" className="absolute inset-0 h-full w-full rounded-lg border object-cover" />
+                  <button type="button" onClick={() => handleRemoveImage(f)} aria-label="写真を削除"
+                    className="absolute right-1 top-1 rounded-full bg-background/80 p-1 text-destructive backdrop-blur hover:bg-background">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
-          <Input id="photo" type="file" accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <input id="photo" type="file" accept="image/*" multiple className="hidden"
+            onChange={(e) => {
+              setFiles((prev) => [...prev, ...Array.from(e.target.files ?? [])]);
+              e.target.value = "";
+            }} />
+          <label htmlFor="photo" className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-sm hover:bg-accent">
+            <ImagePlus className="h-4 w-4" />
+            写真を選択
+          </label>
         </div>
-
 
         {/* 位置 */}
         <div className="flex flex-col gap-1.5">
