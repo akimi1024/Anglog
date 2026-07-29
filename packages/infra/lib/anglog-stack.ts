@@ -213,6 +213,7 @@ export class AnglogStack extends Stack {
       timeout: Duration.seconds(10),
       environment: {
         TABLE_NAME: table.tableName,
+        BUCKET_NAME: imageBucket.bucketName,
       },
     });
 
@@ -222,6 +223,7 @@ export class AnglogStack extends Stack {
       timeout: Duration.seconds(10),
       environment: {
         TABLE_NAME: table.tableName,
+        BUCKET_NAME: imageBucket.bucketName,
       },
     });
 
@@ -250,6 +252,8 @@ export class AnglogStack extends Stack {
 
     // S3権限
     imageBucket.grantPut(uploadUrlFn);
+    imageBucket.grantDelete(updateCatchFn);
+    imageBucket.grantDelete(deleteCatchFn);
 
     httpApi.addRoutes({
       path: "/catches",

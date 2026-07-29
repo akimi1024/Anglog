@@ -88,6 +88,7 @@ export default function EditCatchPage() {
         areaName: areaName || undefined,
         memo: memo || undefined,
         location: location,
+        imageKeys
       };
       await updateCatch(params.id, input);
       router.push(`/catches/${params.id}`);
@@ -106,18 +107,10 @@ export default function EditCatchPage() {
       for (const file of files) {
         const resized = await resizeImage(file);
         const { uploadUrl, key } = await getUploadUrl(params.id, resized.type);
-        await fetch(uploadUrl, {
-          method: "PUT",
-          headers: {
-            "Content-Type": resized.type
-          },
-          body: resized
-        })
+        await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": resized.type }, body: resized });
         added.push(key);
       }
-      const next = [...imageKeys, ...added];
-      await updateCatch(params.id, { imageKeys: next });
-      setImageKeys(next);
+      setImageKeys((prev) => [...prev, ...added]);   // ← updateCatch をやめてローカルに追加
     } catch {
       setError("画像アップロードに失敗しました");
     } finally {
@@ -126,14 +119,9 @@ export default function EditCatchPage() {
     }
   }
 
+
   async function handleRemoveImage(key: string) {
-    const next = imageKeys.filter((k) => k !== key);
-    try {
-      await updateCatch(params.id, { imageKeys: next });
-      setImageKeys(next);
-    } catch {
-      setError("画像の削除に失敗しました");
-    }
+    setImageKeys((prev) => prev.filter((k) => k !== key));
   }
 
   return (
