@@ -9,11 +9,14 @@ import { z } from "zod";
 import ngeohash from "ngeohash";
 import { GeoPoint } from "@anglog/shared";
 import { fetchWeather } from "../weather";
+import { DeleteObjectsCommand, S3Client } from "@aws-sdk/client-s3";
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}), {
   marshallOptions: { removeUndefinedValues: true },
 });
+const s3 = new S3Client({});
 const TABLE_NAME = process.env.TABLE_NAME!;
+const BUCKET_NAME = process.env.BUCKET_NAME!;
 
 const updateCatchSchema = z.object({
   caughtAt: z.string().optional(),
@@ -25,7 +28,10 @@ const updateCatchSchema = z.object({
   reel: z.string().optional(),
   memo: z.string().optional(),
   imageKeys: z.array(z.string()).optional(),
-  location: z.object({ lat: z.number(), lon: z.number() }).nullable().optional(),
+  location: z
+    .object({ lat: z.number(), lon: z.number() })
+    .nullable()
+    .optional(),
   areaName: z.string().optional(),
   isPublic: z.boolean().optional(),
 });
@@ -80,7 +86,7 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
     updatedAt: now,
   };
 
-  if(merged.location === null){
+  if (merged.location === null) {
     delete merged.location;
   }
 
@@ -115,6 +121,22 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
     merged.weather = await fetchWeather(newLoc, merged.caughtAt as string);
   } else if (!newLoc) {
     delete merged.weather;
+  }
+
+  const oldKeys = (got.Item.imageKeys ?? []) as string[];
+  const newKeys = (merged.imageKeys ?? []) as string[];
+  const removed = oldKeys.filter((k) => !newKeys.includes(k));
+  if (removed.length > 0) {
+    try {
+      await s3.send(
+        new DeleteObjectsCommand({
+          Bucket: BUCKET_NAME,
+          Delete: { Objects: removed.map((Key) => ({ Key })) },
+        }),
+      );
+    } catch {
+      // 掃除失敗は無視（更新は続行）
+    }
   }
 
   // 上書き

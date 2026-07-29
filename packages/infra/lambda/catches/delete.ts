@@ -5,9 +5,12 @@ import {
   DynamoDBDocumentClient,
   GetCommand,
 } from "@aws-sdk/lib-dynamodb";
+import { DeleteObjectsCommand, S3Client } from "@aws-sdk/client-s3";
 
 const client = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const s3 = new S3Client({});
 const TABLE_NAME = process.env.TABLE_NAME!;
+const BUCKET_NAME = process.env.BUCKET_NAME!;
 
 export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
   event,
@@ -28,6 +31,20 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
 
   if (got.Item.userId !== userId)
     return { statusCode: 403, body: JSON.stringify({ message: "forbidden" }) };
+
+  const imageKeys = (got.Item.imageKeys ?? []) as string[];
+  if (imageKeys.length > 0) {
+    try {
+      await s3.send(
+        new DeleteObjectsCommand({
+          Bucket: BUCKET_NAME,
+          Delete: { Objects: imageKeys.map((Key) => ({ Key })) },
+        }),
+      );
+    } catch {
+      // 掃除失敗は握りつぶす（本体の削除は続行）
+    }
+  }
 
   await client.send(new DeleteCommand({ TableName: TABLE_NAME, Key: key }));
   return { statusCode: 204, body: "" };
