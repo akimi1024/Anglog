@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImagePlus, X } from "lucide-react";
+import { resizeImage } from "@/lib/resizeImage";
 
 
 export default function NewCatchPage() {
@@ -74,11 +75,12 @@ export default function NewCatchPage() {
       try {
         const keys: string[] = [];
         for (const file of files) {
-          const { uploadUrl, key } = await getUploadUrl(created.catchId, file.type);
+          const resized = await resizeImage(file);
+          const { uploadUrl, key } = await getUploadUrl(created.catchId, resized.type);
           await fetch(uploadUrl, {
             method: "PUT",
-            headers: { "Content-Type": file.type },
-            body: file
+            headers: { "Content-Type": resized.type },
+            body: resized
           });
           keys.push(key);
         }
