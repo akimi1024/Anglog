@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { imageUrl } from "@/lib/image";
 import { X } from "lucide-react";
 import { ImagePlus } from "lucide-react";
+import { resizeImage } from "@/lib/resizeImage";
 
 // ISO(保存値) → datetime-local の "YYYY-MM-DDTHH:mm"（ローカル時刻）へ
 function toLocalInput(iso: string): string {
@@ -103,13 +104,14 @@ export default function EditCatchPage() {
     try {
       const added: string[] = [];
       for (const file of files) {
-        const { uploadUrl, key } = await getUploadUrl(params.id, file.type);
+        const resized = await resizeImage(file);
+        const { uploadUrl, key } = await getUploadUrl(params.id, resized.type);
         await fetch(uploadUrl, {
           method: "PUT",
           headers: {
-            "content-Type": file.type
+            "Content-Type": resized.type
           },
-          body: file
+          body: resized
         })
         added.push(key);
       }
