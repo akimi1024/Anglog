@@ -90,7 +90,7 @@ export default function NewCatchPage() {
       } catch {
         // 画像だけ失敗：釣果は作成済みなので無視して進む
       }
-      router.push(`/catches/${created.catchId}`);
+      router.push(`/catches/detail?id=${created.catchId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "作成に失敗しました");
       setSubmitting(false);

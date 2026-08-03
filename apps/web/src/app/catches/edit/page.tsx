@@ -4,8 +4,8 @@ import MapView from "@/components/MapView";
 import { getCatch, getUploadUrl, updateCatch } from "@/lib/api";
 import { toHalfWidthNumber } from "@/lib/number";
 import { FishingMethod, GeoPoint, UpdateCatchInput } from "@anglog/shared";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,8 +22,9 @@ function toLocalInput(iso: string): string {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
-export default function EditCatchPage() {
-  const params = useParams<{ id: string }>();
+function CatchEditInner() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const router = useRouter();
   const [species, setSpecies] = useState("");
   const [method, setMethod] = useState<FishingMethod>("lure");
@@ -41,7 +42,8 @@ export default function EditCatchPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getCatch(params.id)
+    if (!id) return;
+    getCatch(id)
       .then((c) => {
         setSpecies(c.species);
         if (c.method) setMethod(c.method);
@@ -57,11 +59,12 @@ export default function EditCatchPage() {
         setImageKeys(c.imageKeys ?? []);
       })
       .catch((e) => setError(e instanceof Error ? e.message : "読み込み失敗"));
-  }, [params.id]);
+  }, [id]);
 
   // send
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
+    if (!id) return;
     setError(null);
     const sizeNum = size ? Number(toHalfWidthNumber(size)) : undefined;
     const countNum = count ? Number(toHalfWidthNumber(count)) : undefined;
@@ -90,14 +93,15 @@ export default function EditCatchPage() {
         location: location,
         imageKeys
       };
-      await updateCatch(params.id, input);
-      router.push(`/catches/${params.id}`);
+      await updateCatch(id, input);
+      router.push(`/catches/detail?id=${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "更新に失敗しました");
     }
   }
 
   async function handleAddFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!id) return;
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
     setUploading(true);
@@ -106,7 +110,7 @@ export default function EditCatchPage() {
       const added: string[] = [];
       for (const file of files) {
         const resized = await resizeImage(file);
-        const { uploadUrl, key } = await getUploadUrl(params.id, resized.type);
+        const { uploadUrl, key } = await getUploadUrl(id, resized.type);
         await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": resized.type }, body: resized });
         added.push(key);
       }
@@ -123,6 +127,8 @@ export default function EditCatchPage() {
   async function handleRemoveImage(key: string) {
     setImageKeys((prev) => prev.filter((k) => k !== key));
   }
+
+  if (!id) return <main className="mx-auto max-w-md p-4 text-destructive">IDが指定されていません</main>;
 
   return (
     <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
@@ -239,5 +245,13 @@ export default function EditCatchPage() {
         <Button type="submit" className="mt-1">更新する</Button>
       </form>
     </main>
+  )
+}
+
+export default function EditCatchPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto max-w-md p-4 text-muted-foreground">読み込み中…</main>}>
+      <CatchEditInner />
+    </Suspense>
   )
 }
