@@ -10,7 +10,7 @@ export default function CatchCard({ item }: { item: Catch }) {
   const src = imageUrl(item.imageKeys?.[0]);
 
   return (
-    <Link href={`/catches/detail?id=${item.catchId}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40">
+    <Link href={`/catches/${item.catchId}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40">
       {/* 画像 or NO IMAGE（正方形で高さ統一） */}
       <div className="relative aspect-square bg-muted">
         {src ? (

@@ -41,7 +41,7 @@ export default function CatchesMap({ catches }: { catches: Catch[] }) {
     const markers = withLoc.map((c) => {
       const m = new maplibregl.Marker().setLngLat([c.location!.lon, c.location!.lat]).addTo(map);
       m.getElement().style.cursor = "pointer";
-      m.getElement().addEventListener("click", () => router.push(`/catches/detail?id=${c.catchId}`));
+      m.getElement().addEventListener("click", () => router.push(`/catches/${c.catchId}`));
       return m;
     })
 

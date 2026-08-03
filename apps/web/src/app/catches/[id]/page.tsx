@@ -2,8 +2,8 @@
 
 import { deleteCatch, getCatch } from "@/lib/api";
 import { Catch } from "@anglog/shared";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import MapView from "@/components/MapView";
 import WeatherIcon from "@/components/WeatherIcon";
@@ -14,26 +14,32 @@ import { ChevronLeft, Pencil, Trash2, MapPin, Thermometer, Wind, Gauge } from "l
 import { imageUrl } from "@/lib/image";
 
 
-function CatchDetailInner() {
+export default function CatchDetailPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const id = searchParams.get("id");
-
+  const params = useParams<{ id: string }>();
   const [item, setItem] = useState<Catch | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    getCatch(id).then(setItem).catch((e) => setError(e instanceof Error ? e.message : "取得に失敗しました"))
-  }, [id]);
+    getCatch(params.id)
+      .then(setItem)
+      .catch((e) => setError(e instanceof Error ? e.message : "取得に失敗しました"));
+  }, [params.id]);
 
-  if (!id) return <main className="mx-auto max-w-md p-4 text-destructive">IDが指定されていません</main>;
-  if (error) return <main className="mx-auto max-w-md p-4 text-destructive">{error}</main>;
-  if (!item) return <main className="mx-auto max-w-md p-4 text-destructive">読み込み中…</main>;
+  if (error) {
+    return <main className="mx-auto max-w-md p-4">
+      <p className="text-destructive">{error}</p>
+    </main>;
+  }
 
+  if (!item) {
+    return <main className="mx-auto max-w-md p-4 text-muted-foreground">
+      読み込み中…
+    </main>;
+  }
 
   async function handleDelete() {
-    if (!item) return;
+    if (!item) return
     if (!confirm("この釣果を削除しますか？")) return;
     try {
       await deleteCatch(item.catchId);
@@ -52,7 +58,7 @@ function CatchDetailInner() {
         </Button>
         <div className="flex gap-1">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/catches/edit?id=${id}`}><Pencil className="h-3.5 w-3.5" />編集</Link>
+            <Link href={`/catches/${params.id}/edit`}><Pencil className="h-3.5 w-3.5" />編集</Link>
           </Button>
           <Button variant="ghost" size="sm" onClick={handleDelete}
             className="text-destructive hover:text-destructive">
@@ -141,12 +147,4 @@ function CatchDetailInner() {
       )}
     </main>
   );
-}
-
-export default function CatchDetailPage() {
-  return (
-    <Suspense fallback={<main className="mx-auto max-w-md p-4 text-muted-foreground">読み込み中…</main>}>
-      <CatchDetailInner />
-    </Suspense>
-  )
 }
