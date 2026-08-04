@@ -22,6 +22,7 @@ import {
 import { TARGET_PARTITIONS } from "aws-cdk-lib/cx-api";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
+import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 
 export class AnglogStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -74,6 +75,61 @@ export class AnglogStack extends Stack {
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
       },
+    });
+
+    // ---- web 静的サイト ----
+    const webBucket = new s3.Bucket(this, "webBucket", {
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+    });
+
+    // 拡張子なしURL → .html に書き換え（Next の out/ は catches/detail.html 形式）
+    const rewriteFn = new cloudfront.Function(this, "WebRewriteFunction", {
+      code: cloudfront.FunctionCode.fromInline(`
+        function handler(event) {
+          var request = event.request;
+          var uri = request.uri;
+          if (uri.charAt(uri.length - 1) === "/") {
+            request.uri = uri + "index.html";
+          } else if (uri.indexOf(".") === -1) {
+            request.uri = uri + ".html";
+          }
+          return request;
+        }
+      `),
+    });
+
+    const webCdn = new cloudfront.Distribution(this, "webCdn", {
+      defaultRootObject: "index.html",
+      defaultBehavior: {
+        origin: origins.S3BucketOrigin.withOriginAccessControl(webBucket),
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        functionAssociations: [
+          {
+            function: rewriteFn,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          },
+        ],
+      },
+      errorResponses: [
+        {
+          httpStatus: 404,
+          responsePagePath: "/404.html",
+          responseHttpStatus: 404,
+        },
+      ],
+    });
+    new CfnOutput(this, "WebCdnDomain", {
+      value: webCdn.distributionDomainName,
+    });
+
+    new s3deploy.BucketDeployment(this, "WebDeploy", {
+      sources: [s3deploy.Source.asset("../../apps/web/out")],
+      destinationBucket: webBucket,
+      distribution: webCdn,
+      distributionPaths: ["/*"],
     });
 
     const userPool = new cognito.UserPool(this, "UserPool", {
