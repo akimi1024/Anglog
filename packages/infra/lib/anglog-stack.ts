@@ -160,7 +160,10 @@ export class AnglogStack extends Stack {
 
     const httpApi = new HttpApi(this, "AnglogHttpApi", {
       corsPreflight: {
-        allowOrigins: ["http://localhost:3000"],
+        allowOrigins: [
+          "http://localhost:3000",
+          `https://${webCdn.distributionDomainName}`,
+        ],
         allowMethods: [
           CorsHttpMethod.GET,
           CorsHttpMethod.POST,
