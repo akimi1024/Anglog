@@ -330,6 +330,7 @@ export class AnglogStack extends Stack {
     table.grantReadWriteData(updateCatchFn);
     table.grantReadWriteData(deleteCatchFn);
     table.grantReadData(uploadUrlFn);
+    table.grantReadData(advisorFn);
 
     // S3権限
     imageBucket.grantPut(uploadUrlFn);
