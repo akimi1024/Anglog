@@ -23,6 +23,8 @@ import { TARGET_PARTITIONS } from "aws-cdk-lib/cx-api";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
+import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
+import * as secrets from "aws-cdk-lib/aws-secretsmanager";
 
 export class AnglogStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -230,6 +232,26 @@ export class AnglogStack extends Stack {
       },
     );
 
+    // 保存済みシークレットを参照
+    const anthropicKey = secrets.Secret.fromSecretNameV2(
+      this,
+      "AnthropicKey",
+      "anglog/anthropic-key",
+    );
+
+    const advisorFn = new PythonFunction(this, "AdvisorFunction", {
+      entry: "lambda-py/advisor",
+      index: "index.py",
+      handler: "handler",
+      runtime: lambda.Runtime.PYTHON_3_13,
+      timeout: Duration.seconds(60),
+      memorySize: 512,
+      environment: {
+        ANTHROPIC_API_KEY: anthropicKey.secretValue.unsafeUnwrap(),
+        TABLE_NAME: table.tableName,
+      },
+    });
+
     const createCatchFn = new NodejsFunction(this, "CreateCatchFunction", {
       entry: "lambda/catches/create.ts",
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -313,6 +335,13 @@ export class AnglogStack extends Stack {
     imageBucket.grantPut(uploadUrlFn);
     imageBucket.grantDelete(updateCatchFn);
     imageBucket.grantDelete(deleteCatchFn);
+
+    httpApi.addRoutes({
+      path: "/advisor",
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration("AdvisorIntegration", advisorFn),
+      authorizer,
+    });
 
     httpApi.addRoutes({
       path: "/catches",
