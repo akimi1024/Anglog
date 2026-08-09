@@ -70,6 +70,7 @@ export default function Header() {
           ["/catches/me", "自分の記録"],
           ["/catches/map", "地図"],
           ["/catches/new", "+ 記録"],
+          ["/advisor", "AIに相談"],
         ].map(([href, label]) => (
           <Button key={href} variant="ghost" size="sm" asChild>
             <Link href={href}>{label}</Link>

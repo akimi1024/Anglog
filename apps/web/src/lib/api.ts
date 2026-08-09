@@ -106,3 +106,28 @@ export async function getUploadUrl(
     throw new Error(`アップロードURL取得に失敗しました (${res.status})`);
   return res.json();
 }
+
+export async function askAdvisor(question: string): Promise<{ jobId: string }> {
+  const token = await getIdToken();
+  const res = await fetch(`${API_URL}/advisor`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ question }),
+  });
+  if (!res.ok) throw new Error(`相談の送信に失敗しました (${res.status})`);
+  return res.json();
+}
+
+export async function getAdvisorResult(
+  jobId: string,
+): Promise<{ status: string; answer: string | null }> {
+  const token = await getIdToken();
+  const res = await fetch(`${API_URL}/advisor/result?jobId=${jobId}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error(`結果取得に失敗しました (${res.status})`);
+  return res.json();
+}
