@@ -239,19 +239,6 @@ export class AnglogStack extends Stack {
       "anglog/anthropic-key",
     );
 
-    const advisorFn = new PythonFunction(this, "AdvisorFunction", {
-      entry: "lambda-py/advisor",
-      index: "index.py",
-      handler: "handler",
-      runtime: lambda.Runtime.PYTHON_3_13,
-      timeout: Duration.seconds(60),
-      memorySize: 512,
-      environment: {
-        ANTHROPIC_API_KEY: anthropicKey.secretValue.unsafeUnwrap(),
-        TABLE_NAME: table.tableName,
-      },
-    });
-
     const createCatchFn = new NodejsFunction(this, "CreateCatchFunction", {
       entry: "lambda/catches/create.ts",
       runtime: lambda.Runtime.NODEJS_22_X,
@@ -330,19 +317,11 @@ export class AnglogStack extends Stack {
     table.grantReadWriteData(updateCatchFn);
     table.grantReadWriteData(deleteCatchFn);
     table.grantReadData(uploadUrlFn);
-    table.grantReadData(advisorFn);
 
     // S3権限
     imageBucket.grantPut(uploadUrlFn);
     imageBucket.grantDelete(updateCatchFn);
     imageBucket.grantDelete(deleteCatchFn);
-
-    httpApi.addRoutes({
-      path: "/advisor",
-      methods: [HttpMethod.POST],
-      integration: new HttpLambdaIntegration("AdvisorIntegration", advisorFn),
-      authorizer,
-    });
 
     httpApi.addRoutes({
       path: "/catches",
@@ -405,6 +384,65 @@ export class AnglogStack extends Stack {
       integration: new HttpLambdaIntegration(
         "UploadUrlIntegration",
         uploadUrlFn,
+      ),
+      authorizer,
+    });
+
+    // ---- AIアドバイザー（非同期） ----
+    // Worker（Python・AI本体）
+    const advisorWorkerFn = new PythonFunction(this, "AdvisorWorkerFUnction", {
+      entry: "lambda-py/advisor",
+      index: "worker.py",
+      handler: "handler",
+      runtime: lambda.Runtime.PYTHON_3_13,
+      timeout: Duration.seconds(300),
+      memorySize: 512,
+      environment: {
+        ANTHROPIC_API_KEY: anthropicKey.secretValue.unsafeUnwrap(),
+        TABLE_NAME: table.tableName,
+      },
+    });
+    table.grantReadWriteData(advisorWorkerFn);
+
+    // Submit（TS・受付）
+    const advisorSubmitFn = new NodejsFunction(this, "AdvisorSubmitFunction", {
+      entry: "lambda/advisor/submit.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+        WORKER_FUNCTION_NAME: advisorWorkerFn.functionName,
+      },
+    });
+    table.grantWriteData(advisorSubmitFn);
+    advisorWorkerFn.grantInvoke(advisorSubmitFn);
+
+    // Result（TS・結果取得）
+    const advisorResultFn = new NodejsFunction(this, "AdvisorResultFunction", {
+      entry: "lambda/advisor/result.ts",
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: Duration.seconds(10),
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
+    });
+    table.grantReadData(advisorResultFn);
+
+    httpApi.addRoutes({
+      path: "/advisor",
+      methods: [HttpMethod.POST],
+      integration: new HttpLambdaIntegration(
+        "AdvisorSubmitIntegration",
+        advisorSubmitFn,
+      ),
+      authorizer,
+    });
+    httpApi.addRoutes({
+      path: "/advisor/result",
+      methods: [HttpMethod.GET],
+      integration: new HttpLambdaIntegration(
+        "AdvisorResultIntegration",
+        advisorResultFn,
       ),
       authorizer,
     });

@@ -1,7 +1,7 @@
 import json
 import os
 import urllib.request
-from datetime import date as date_cls
+from datetime import date as date_cls, datetime, timezone
 
 import boto3
 from boto3.dynamodb.conditions import Key
@@ -81,30 +81,43 @@ def get_forecast(latitude: float, longitude: float, date: str = "") -> str:
     return json.dumps({"error": str(e)})
 
 
-SYSTEM = """あなたは釣りアドバイザーです。ユーザーの相談に、ツールで調べた実際の釣果データと天気予報を根拠に答えてください。
-- search_catches で公開釣果を調べ「どこで何が釣れているか」を根拠(catchId)付きで示す
-- 必要なら get_forecast で予定日の天気を確認し、条件を踏まえて提案する
-- 推測で断定せず、ツールで裏を取る。分からないことは分からないと言う
+def _update(job_id, status, answer):
+  table.update_item(
+    Key={"PK": f"ADVISOR#{job_id}", "SK": "META"},
+    UpdateExpression="SET #s = :s, answer = :a, updatedAt = :u",
+    ExpressionAttributeNames={"#s": "status"},
+    ExpressionAttributeValues={
+        ":s": status, ":a": answer,
+        ":u": datetime.now(timezone.utc).isoformat(),
+    },
+  )
+
+
+SYSTEM = """あなたは釣りアドバイザーです。ツールで調べた実データと天気予報を根拠に答えてください。
+- search_catches で自分のアプリの公開釣果を調べ、根拠(catchId)付きで示す
+- web_search で外部サイト・SNSの最近の釣果情報も調べてよい。ただし外部情報は必ず出典（URL/媒体）を添え、「アプリ内の釣果」と「外部の情報」を区別して書く
+- get_forecast で予定日の天気を確認し、条件を踏まえて提案する
+- 推測で断定せず裏を取る。不確かなことは不確かと言う
 - 日本語で簡潔に、実用的に答える"""
 
 
 def handler(event, context):
-  body = json.loads(event.get("body") or "{}")
-  question = (body.get("question") or "").strip()
-  if not question:
-    return {"statusCode": 400, "body": json.dumps({"message": "question required"})}
-
-  runner = client.beta.messages.tool_runner(
-    model="claude-opus-4-8",
-    max_tokens=2048,
-    system=SYSTEM,
-    tools=[search_catches, get_forecast],
-    messages=[{"role": "user", "content": question}],
-  )
-  final = runner.until_done()
-  text = "".join(b.text for b in final.content if b.type == "text")
-  return {
-    "statusCode": 200,
-    "headers": {"content-type": "application/json"},
-    "body": json.dumps({"answer": text}, ensure_ascii=False),
-  }
+  job_id = event["jobId"]
+  question = event["question"]
+  try:
+    runner = client.beta.messages.tool_runner(
+      model="claude-opus-4-8",
+      max_tokens=2048,
+      system=SYSTEM,
+      tools=[
+        search_catches,
+        get_forecast,
+        {"type": "web_search_20260209", "name": "web_search", "max_uses": 5},
+      ],
+      messages=[{"role": "user", "content": question}],
+    )
+    final = runner.until_done()
+    answer = "".join(b.text for b in final.content if b.type == "text")
+    _update(job_id, "done", answer)
+  except Exception as e:
+    _update(job_id, "error", str(e))
