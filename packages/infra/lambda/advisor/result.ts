@@ -33,6 +33,7 @@ export const handler: APIGatewayProxyHandlerV2WithJWTAuthorizer = async (
     body: JSON.stringify({
       status: got.Item.status,
       answer: got.Item.answer ?? null,
+      catchIds: got.Item.catchIds ?? [],
     }),
   };
 };

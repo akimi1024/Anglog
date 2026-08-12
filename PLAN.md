@@ -86,6 +86,7 @@
 - [x] **一覧を画像カードのレスポンシブグリッドに刷新** — 2026-07 完了（NO IMAGEプレースホルダ）。
 - [x] **画像アップロード(S3)** — 2026-07 完了。CloudFront(OAC)配信＋署名付きPUT URL、作成/編集から複数枚アップロード・削除、一覧/詳細に表示。
 - [x] **公開デプロイ（Phase 10）** — 2026-08 完了。Next.js を静的書き出し(output:export)→ S3(非公開)+CloudFront(OAC)+URL書換Function+BucketDeployment(CDK)。API GatewayのCORSにCloudFrontオリジン追加。CRUD/地図/天気/画像アップロードまで本番URLで動作確認済み。
-- [ ] **AI釣り場アドバイザー（Python・本命）** ／ PWA ／ 収益化（Phase 9）／ 地図bbox検索(GSI3) ／ next-image最適化
+- [x] **AI釣り場アドバイザー（Python・本命）** — 2026-08 完了。非同期エージェント（Submit/Worker/Result の3Lambda）。Claude(opus-4-8)＋Tool Runner で釣果DB検索・天気予報・Web検索を使い根拠付き提案。/advisor UIでポーリング表示。
+- [ ] 回答の根拠カード表示(catchId→CatchCard) ／ get_user_catchesツール ／ 相談履歴 ／ PWA ／ 収益化（Phase 9）／ 地図bbox検索(GSI3) ／ next-image最適化
 
 **デプロイ手順メモ:** web変更時は `pnpm --filter @anglog/web build` → `pnpm --filter @anglog/infra run deploy`（NEXT_PUBLIC_* もビルド時に焼き込むため要再ビルド）。infraのみ変更なら deploy だけ。

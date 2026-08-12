@@ -123,7 +123,7 @@ export async function askAdvisor(question: string): Promise<{ jobId: string }> {
 
 export async function getAdvisorResult(
   jobId: string,
-): Promise<{ status: string; answer: string | null }> {
+): Promise<{ status: string; answer: string | null; catchIds: string[] }> {
   const token = await getIdToken();
   const res = await fetch(`${API_URL}/advisor/result?jobId=${jobId}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},

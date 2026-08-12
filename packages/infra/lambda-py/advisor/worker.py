@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import urllib.request
 from datetime import date as date_cls, datetime, timezone
 
@@ -21,6 +22,13 @@ def _loc(v):
     return {"lat": _num(v.get("lat")), "lon": _num(v.get("lon"))}
   return None
 
+
+def _extract_catch_ids(text: str):
+  m = re.search(r"\[\[catchIds:(.*?)\]\]", text)
+  ids = [x.strip() for x in m.group(1).split(",")] if m else []
+  ids = [x for x in ids if x]
+  clean = re.sub(r"\[\[catchIds:.*?\]\]", "", text).strip()  # 本文からマーカー除去
+  return clean, ids
 
 @beta_tool
 def search_catches(species: str = "", area: str = "", limit: int = 20) -> str:
@@ -81,13 +89,13 @@ def get_forecast(latitude: float, longitude: float, date: str = "") -> str:
     return json.dumps({"error": str(e)})
 
 
-def _update(job_id, status, answer):
+def _update(job_id, status, answer, catch_ids=None):
   table.update_item(
     Key={"PK": f"ADVISOR#{job_id}", "SK": "META"},
-    UpdateExpression="SET #s = :s, answer = :a, updatedAt = :u",
+    UpdateExpression="SET #s = :s, answer = :a, catchIds = :c, updatedAt = :u",
     ExpressionAttributeNames={"#s": "status"},
     ExpressionAttributeValues={
-        ":s": status, ":a": answer,
+        ":s": status, ":a": answer, ":c": catch_ids or [],
         ":u": datetime.now(timezone.utc).isoformat(),
     },
   )
@@ -95,10 +103,11 @@ def _update(job_id, status, answer):
 
 SYSTEM = """あなたは釣りアドバイザーです。ツールで調べた実データと天気予報を根拠に答えてください。
 - search_catches で自分のアプリの公開釣果を調べ、根拠(catchId)付きで示す
-- web_search で外部サイト・SNSの最近の釣果情報も調べてよい。ただし外部情報は必ず出典（URL/媒体）を添え、「アプリ内の釣果」と「外部の情報」を区別して書く
+- web_search で外部の最近の釣果情報も調べてよい。外部情報の出典は必ず [媒体名](URL) の markdownリンク形式で書き、「アプリ内の釣果」と「外部情報」を区別する
 - get_forecast で予定日の天気を確認し、条件を踏まえて提案する
 - 推測で断定せず裏を取る。不確かなことは不確かと言う
-- 日本語で簡潔に、実用的に答える"""
+- 日本語で簡潔に、実用的に答える
+- 回答の最後に、提案の根拠にしたアプリ内釣果の catchId を [[catchIds: id1, id2]] の形式で1行だけ出力する（該当が無ければ [[catchIds: ]]）"""
 
 
 def handler(event, context):
@@ -117,7 +126,8 @@ def handler(event, context):
       messages=[{"role": "user", "content": question}],
     )
     final = runner.until_done()
-    answer = "".join(b.text for b in final.content if b.type == "text")
-    _update(job_id, "done", answer)
+    row = "".join(b.text for b in final.content if b.type == "text")
+    answer, catch_ids = _extract_catch_ids(row)
+    _update(job_id, "done", answer, catch_ids)
   except Exception as e:
     _update(job_id, "error", str(e))
