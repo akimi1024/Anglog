@@ -2,10 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { askAdvisor, getAdvisorResult } from "@/lib/api";
+import { askAdvisor, getAdvisorResult, getCatch } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import { Sparkles } from "lucide-react";
 import { useState } from "react";
+import { Catch } from "@anglog/shared";
+import CatchCard from "@/components/CatchCard";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -13,6 +15,7 @@ export default function AdvisorPage() {
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState("");
+  const [groundCatches, setGroundCatches] = useState<Catch[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   async function handleAsk(e: React.SubmitEvent) {
@@ -20,6 +23,7 @@ export default function AdvisorPage() {
     if (!question.trim() || loading) return;
     setLoading(true);
     setAnswer("");
+    setGroundCatches([]);
     setError(null);
 
     try {
@@ -28,7 +32,16 @@ export default function AdvisorPage() {
       for (let i = 0; i < 60; i++) {
         await sleep(2000);
         const res = await getAdvisorResult(jobId);
-        if (res.status === "done") { setAnswer(res.answer ?? ""); return }
+        if (res.status === "done") {
+          setAnswer(res.answer ?? "");
+          if (res.catchIds.length > 0) {
+            const results = await Promise.all(
+              res.catchIds.map((id) => getCatch(id).catch(() => null)),
+            );
+            setGroundCatches(results.filter((c): c is Catch => c !== null));
+          }
+          return
+        }
         if (res.status === "error") { setError(res.answer || "AI処理でエラーが発生しました"); return }
         // runningは継続
       }
@@ -70,7 +83,28 @@ export default function AdvisorPage() {
 
       {answer && (
         <div className="prose prose-sm dark:prose-invert max-w-none rounded-2xl border bg-card p-4">
-          <ReactMarkdown>{answer}</ReactMarkdown>
+          <ReactMarkdown
+            components={{
+              a: ({ href, children }) => (
+                <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                  {children}
+                </a>
+              ),
+            }}
+          >
+            {answer}
+          </ReactMarkdown>
+        </div>
+      )}
+
+      {groundCatches.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-sm font-semibold text-muted-foreground">根拠にした釣果</h2>
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {groundCatches.map((c) => (
+              <li key={c.catchId}><CatchCard item={c} /></li>
+            ))}
+          </ul>
         </div>
       )}
     </main>
