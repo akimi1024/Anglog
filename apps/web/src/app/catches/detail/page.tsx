@@ -10,7 +10,7 @@ import WeatherIcon from "@/components/WeatherIcon";
 import { methodToLabel, methodChip } from "@/lib/catch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Pencil, Trash2, MapPin, Thermometer, Wind, Gauge } from "lucide-react";
+import { ChevronLeft, Pencil, Trash2, MapPin, Thermometer, Wind, Gauge, Waves } from "lucide-react";
 import { imageUrl } from "@/lib/image";
 
 
@@ -44,7 +44,7 @@ function CatchDetailInner() {
   }
 
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-4 p-4">
+    <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-4 sm:p-6">
       {/* ナビ + 操作 */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
@@ -61,7 +61,7 @@ function CatchDetailInner() {
         </div>
       </div>
 
-      {/* ヒーロー: チップ + 魚種 + サイズ主役 */}
+      {/* ヒーロー：チップ + 魚種 + サイズ主役 */}
       <div className="flex items-end justify-between gap-3">
         <div className="min-w-0">
           {item.method && (
@@ -87,6 +87,7 @@ function CatchDetailInner() {
         )}
       </div>
 
+      {/* 画像 */}
       {item.imageKeys.length > 0 && (
         <div className="flex flex-col gap-2">
           {item.imageKeys.map((key) => (
@@ -95,7 +96,7 @@ function CatchDetailInner() {
         </div>
       )}
 
-      {/* 天気カード: 計器っぽくmonoで並べる */}
+      {/* 天気カード（波高込み） */}
       {item.weather && (
         <Card size="sm">
           <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -103,16 +104,19 @@ function CatchDetailInner() {
               <WeatherIcon condition={item.weather.condition} className="h-5 w-5" />
               <span className="font-medium text-foreground">{item.weather.condition}</span>
             </span>
-            <div className="ml-auto flex gap-4 font-mono text-sm tabular-nums text-muted-foreground">
+            <div className="ml-auto flex flex-wrap gap-x-4 gap-y-1 font-mono text-sm tabular-nums text-muted-foreground">
               <span className="flex items-center gap-1"><Thermometer className="h-3.5 w-3.5" />{item.weather.temperature}℃</span>
               <span className="flex items-center gap-1"><Wind className="h-3.5 w-3.5" />{item.weather.windSpeed}<span className="text-xs">km/h</span></span>
               <span className="flex items-center gap-1"><Gauge className="h-3.5 w-3.5" />{item.weather.pressure}<span className="text-xs">hPa</span></span>
+              {item.weather.waveHeight != null && (
+                <span className="flex items-center gap-1"><Waves className="h-3.5 w-3.5" />{item.weather.waveHeight}<span className="text-xs">m</span></span>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* 詳細: 項目があるときだけ */}
+      {/* 詳細（項目があるときだけ） */}
       {(item.tackle || item.reel || item.areaName) && (
         <Card size="sm">
           <CardContent>
@@ -133,7 +137,7 @@ function CatchDetailInner() {
         </Card>
       )}
 
-      {/* 地図 */}
+      {/* 地図（他と同じ幅） */}
       {item.location && (
         <div className="overflow-hidden rounded-2xl border">
           <MapView value={item.location} />
