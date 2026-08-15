@@ -22,6 +22,13 @@ type OpenMeteoResponse = {
   };
 };
 
+type MarineResponse = {
+  hourly: {
+    time: string[];
+    wave_height: (number | null)[];
+  };
+};
+
 export async function fetchWeather(
   location: GeoPoint,
   caughtAt: string,
@@ -40,12 +47,37 @@ export async function fetchWeather(
     const data = (await res.json()) as OpenMeteoResponse;
     const i = data.hourly.time.indexOf(targetHour);
     if (i === -1) return undefined;
+
+    const waveHeight = await fetchWaveHeight(location, date, targetHour);
     return {
       condition: wmoToCondition(data.hourly.weather_code[i]),
       temperature: data.hourly.temperature_2m[i],
       windSpeed: data.hourly.wind_speed_10m[i],
       pressure: data.hourly.surface_pressure[i],
+      waveHeight, // ← 追加（内陸は undefined → DynamoDBの removeUndefinedValues で自動除外）
     };
+  } catch {
+    return undefined;
+  }
+}
+
+async function fetchWaveHeight(
+  location: GeoPoint,
+  date: string,
+  targetHour: string,
+): Promise<number | undefined> {
+  const url =
+    `https://marine-api.open-meteo.com/v1/marine?latitude=${location.lat}&longitude=${location.lon}` +
+    `&start_date=${date}&end_date=${date}&hourly=wave_height&timezone=UTC`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as MarineResponse;
+    const i = data.hourly?.time?.indexOf(targetHour) ?? -1;
+    if (i === -1) return undefined;
+    const h = data.hourly.wave_height[i];
+    return typeof h === "number" ? h : undefined; // 内陸は null → undefined
   } catch {
     return undefined;
   }

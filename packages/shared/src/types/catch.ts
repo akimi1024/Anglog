@@ -9,6 +9,7 @@ export interface Weather {
   temperature: number; // 気温
   windSpeed: number;
   pressure: number;
+  waveHeight?: number;  // 波高(m)。内陸/取得不可なら undefined
 }
 
 // 釣果エンティティ
